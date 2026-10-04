@@ -63,10 +63,13 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 
 /* 単語編集テーブル */
 .word-edit-list{padding:10px 12px;border-top:1px solid #e5e7eb;background:#fff;display:flex;flex-direction:column;gap:10px}
-.edit-row{display:grid;grid-template-columns:1fr 1fr 110px 36px;gap:6px;align-items:center}
+.edit-row{display:grid;grid-template-columns:1fr 1fr 100px 60px 36px;gap:6px;align-items:center}
 .edit-input{height:38px !important;font-size:14px !important;border-radius:8px !important;padding:0 8px !important}
 .edit-select{height:38px !important;font-size:13px !important;border-radius:8px !important;padding:0 4px !important;background:#fff}
 .btn-icon-del{height:38px;width:36px;background:#fee2e2;color:#ef4444;border:0;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
+.move-btns{display:flex;gap:2px}
+.btn-arrow{height:38px;width:28px;background:#f3f4f6;color:#444;border:1px solid #d1d5db;border-radius:6px;font-size:12px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}
+.btn-arrow:disabled{opacity:0.3;cursor:not-allowed}
 .empty-msg{font-size:14px;color:#888;text-align:center;padding:25px 0}
 
 /* 貼り付けエリア */
@@ -76,6 +79,7 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 @media(max-width:500px){
   .edit-row{grid-template-columns:1fr 1fr;row-gap:6px}
   .edit-row .edit-select{grid-column:span 1}
+  .edit-row .move-btns{grid-column:span 1;justify-content:flex-end}
   .edit-row .btn-icon-del{grid-column:span 1;width:100%}
 }
 @media(max-width:380px){.jp{font-size:28px}main{padding-left:10px;padding-right:10px}.card{padding:17px 14px}}
@@ -165,11 +169,11 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
         <span id="totalWordCount" style="font-size:13px;font-weight:normal;color:#666;">計 0 単語</span>
       </div>
 
-      <!-- Geminiのコード貼り付け用エリア -->
+      <!-- AIのコード貼り付け用エリア -->
       <div class="paste-box">
-        <label>✨ Geminiが出力したコードを貼り付け</label>
+        <label>AIが出力したコードを貼り付け</label>
         <input type="text" id="groupNameInput" placeholder="画像名やグループ名（例: ノート1枚目）" style="height:38px;font-size:14px;margin-bottom:8px;">
-        <textarea id="pasteInput" rows="3" placeholder='ここに貼り付け'></textarea>
+        <textarea id="pasteInput" rows="3" placeholder="ここにコードを貼り付け"></textarea>
         <button type="button" class="primary" onclick="importFromGemini()" style="width:100%;height:40px;margin-top:8px;font-size:14px;">コードから追加する</button>
         <div id="importError" style="color:#ef4444;font-size:12px;margin-top:4px;"></div>
       </div>
@@ -189,11 +193,11 @@ const AUTH_KEY = "app_auth_passcode";
 const STORAGE_GROUPS_KEY = "eiken_app_groups";
 const STORAGE_WORDS_KEY = "eiken_app_words";
 
-// データの読み込み（localStorageに保存されている場合はそれを使い、無ければ空配列）
+// データの読み込み
 let groups = JSON.parse(localStorage.getItem(STORAGE_GROUPS_KEY)) || [];
 let words = JSON.parse(localStorage.getItem(STORAGE_WORDS_KEY)) || [];
 
-// データをlocalStorageに保存する関数
+// データをlocalStorageに保存
 function saveData() {
   localStorage.setItem(STORAGE_GROUPS_KEY, JSON.stringify(groups));
   localStorage.setItem(STORAGE_WORDS_KEY, JSON.stringify(words));
@@ -233,7 +237,6 @@ function checkPassword() {
   }
 }
 
-// ページ切り替え関数
 function switchPage(pageId) {
   if (pageId === 'quizPage') {
     $("quizPage").classList.remove("hidden");
@@ -250,7 +253,9 @@ function switchPage(pageId) {
 }
 
 function start() {
-  if (words.length === 0) {
+  const validWords = words.filter(w => w.en.trim() !== "" || w.jp.trim() !== "");
+
+  if (validWords.length === 0) {
     $("quiz").classList.add("hidden");
     $("result").classList.add("hidden");
     $("noWordsMsg").classList.remove("hidden");
@@ -262,9 +267,9 @@ function start() {
 
   const orderMode = $("orderSelect").value;
   if (orderMode === "random") {
-    q = shuffle(words);
+    q = shuffle(validWords);
   } else {
-    q = words.slice();
+    q = validWords.slice();
   }
 
   i = 0; ok = 0; ng = 0;
@@ -279,8 +284,8 @@ function show() {
   const w = q[i];
   $("count").textContent = (i + 1) + " / " + q.length;
   $("fill").style.width = (i / q.length * 100) + "%";
-  $("jp").textContent = w.jp;
-  $("pos").textContent = w.pos;
+  $("jp").textContent = w.jp || "（未設定）";
+  $("pos").textContent = w.pos || "名詞 (n.)";
   $("input").value = "";
   $("input").disabled = false;
   $("feedback").className = "feedback";
@@ -350,7 +355,7 @@ function finish() {
 
 function deleteSingleWord(wordId) {
   words = words.filter(w => w.id !== wordId);
-  saveData(); // 保存
+  saveData();
   start();
 }
 
@@ -358,7 +363,7 @@ function deleteGroup(groupId) {
   if (confirm("この画像に登録されているすべての単語を削除しますか？")) {
     words = words.filter(w => w.groupId !== groupId);
     groups = groups.filter(g => g.id !== groupId);
-    saveData(); // 保存
+    saveData();
     start();
   }
 }
@@ -367,7 +372,7 @@ function toggleAccordion(groupId) {
   const g = groups.find(item => item.id === groupId);
   if (g) {
     g.open = !g.open;
-    saveData(); // アコーディオンの開閉状態も保存
+    saveData();
     updateManageUI();
   }
 }
@@ -376,7 +381,7 @@ function updateWordField(wordId, field, value) {
   const w = words.find(item => item.id === wordId);
   if (w) {
     w[field] = value.trim();
-    saveData(); // 保存
+    saveData();
     if (q[i] && q[i].id === wordId) {
       if (field === 'jp') $("jp").textContent = w.jp;
       if (field === 'pos') $("pos").textContent = w.pos;
@@ -384,23 +389,40 @@ function updateWordField(wordId, field, value) {
   }
 }
 
+function moveWord(wordId, direction) {
+  const index = words.findIndex(w => w.id === wordId);
+  if (index === -1) return;
+
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= words.length) return;
+
+  const temp = words[index];
+  words[index] = words[targetIndex];
+  words[targetIndex] = temp;
+
+  saveData();
+  start();
+}
+
 function addNewWord() {
-  let defaultGroup = groups[0];
-  if (!defaultGroup) {
-    defaultGroup = { id: "g_" + Date.now(), name: "新規グループ", open: true };
-    groups.push(defaultGroup);
+  let targetGroup = groups[groups.length - 1];
+  if (!targetGroup) {
+    targetGroup = { id: "g_" + Date.now(), name: "手動追加データ", open: true };
+    groups.push(targetGroup);
+  } else {
+    targetGroup.open = true;
   }
 
   const newId = "w_" + Date.now();
-  words.unshift({
+  words.push({
     id: newId,
-    groupId: defaultGroup.id,
-    en: "newword",
+    groupId: targetGroup.id,
+    en: "",
     pos: "名詞 (n.)",
-    jp: "新しい単語"
+    jp: ""
   });
-  saveData(); // 保存
-  start();
+  saveData();
+  updateManageUI();
 }
 
 function importFromGemini() {
@@ -431,7 +453,7 @@ function importFromGemini() {
       }));
 
       words = words.concat(newItems);
-      saveData(); // 保存
+      saveData();
       
       $("pasteInput").value = "";
       $("groupNameInput").value = "";
@@ -445,7 +467,8 @@ function importFromGemini() {
 }
 
 function updateManageUI() {
-  $("totalWordCount").textContent = `計 ${words.length} 単語`;
+  const validWordCount = words.filter(w => w.en.trim() !== "" || w.jp.trim() !== "").length;
+  $("totalWordCount").textContent = `計 ${validWordCount} 単語`;
   const listEl = $("imageList");
   listEl.innerHTML = "";
 
@@ -480,7 +503,11 @@ function updateManageUI() {
       if (groupWords.length === 0) {
         editList.innerHTML = `<div class="empty-msg">この画像に単語はありません</div>`;
       } else {
-        groupWords.forEach(w => {
+        groupWords.forEach((w) => {
+          const globalIdx = words.findIndex(item => item.id === w.id);
+          const isFirst = globalIdx === 0;
+          const isLast = globalIdx === words.length - 1;
+
           const row = document.createElement("div");
           row.className = "edit-row";
           row.innerHTML = `
@@ -492,6 +519,10 @@ function updateManageUI() {
               <option value="形容詞 (a.)" ${w.pos.includes('形容詞') ? 'selected' : ''}>形容詞 (a.)</option>
               <option value="副詞 (ad.)" ${w.pos.includes('副詞') ? 'selected' : ''}>副詞 (ad.)</option>
             </select>
+            <div class="move-btns">
+              <button type="button" class="btn-arrow" ${isFirst ? 'disabled' : ''} onclick="moveWord('${w.id}', -1)">▲</button>
+              <button type="button" class="btn-arrow" ${isLast ? 'disabled' : ''} onclick="moveWord('${w.id}', 1)">▼</button>
+            </div>
             <button type="button" class="btn-icon-del" title="削除" onclick="deleteSingleWord('${w.id}')">✕</button>
           `;
           editList.appendChild(row);
