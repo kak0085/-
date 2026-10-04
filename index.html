@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>英検対策 一問一答</title>
+<!-- Tesseract.js (ブラウザ内OCRライブラリ) の読み込み -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f4f6;color:#111;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+main{width:min(100%,600px);margin:auto;padding:18px 14px 35px}
+h1{font-size:23px;margin:4px 0 4px}
+.desc{font-size:14px;color:#666;margin-bottom:16px}
+.card{background:#fff;border-radius:18px;padding:20px 17px;box-shadow:0 2px 12px #00000012;margin-bottom:15px}
+.top{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:8px}
+.track{height:7px;background:#e5e7eb;border-radius:9px;overflow:hidden;margin-bottom:24px}
+.fill{height:100%;width:0;background:#111;transition:.2s}
+.question{text-align:center;min-height:145px;display:flex;flex-direction:column;justify-content:center}
+.jp{font-size:32px;font-weight:700;line-height:1.35}
+.pos{display:inline-block;margin:10px auto 0;padding:5px 10px;border-radius:8px;background:#eee;color:#555;font-size:14px}
+input[type="text"], input[type="password"], select{display:block;width:100%;height:54px;border:2px solid #ddd;border-radius:12px;padding:0 14px;font-size:20px;outline:0}
+input[type="text"]:focus, input[type="password"]:focus, select:focus{border-color:#555}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.primary{background:#111;color:#fff}
+.secondary{background:#e9eaec;color:#111}
+.upload-btn{background:#2563eb;color:#fff;width:100%;margin-top:10px}
+.upload-btn:disabled{background:#93c5fd;cursor:not-allowed}
+.feedback{min-height:58px;margin-top:12px;padding:12px;border-radius:11px;font-size:15px;line-height:1.5}
+.good{background:#e9f7ec}
+.bad{background:#fff0f0}
+.answer{font-size:21px;font-weight:700}
+.stats{display:flex;justify-content:space-between;margin-top:12px;color:#777;font-size:13px}
+.result{text-align:center;padding:32px 18px}
+.score{font-size:48px;font-weight:800;margin:15px 0}
+.hidden{display:none !important}
+
+/* パスワード保護用スタイリング */
+.auth-card{text-align:center;padding:30px 20px}
+.auth-title{font-size:20px;font-weight:700;margin-bottom:10px}
+.auth-desc{font-size:14px;color:#666;margin-bottom:20px}
+.auth-error{color:#ef4444;font-size:13px;margin-top:10px;min-height:20px}
+
+/* 写真別データ管理エリアのスタイル */
+.manage-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.image-list{display:flex;flex-direction:column;gap:10px}
+.image-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.image-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none}
+.image-info{display:flex;flex-direction:column;gap:2px;overflow:hidden;padding-right:8px}
+.image-name{font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.image-meta{font-size:12px;color:#666}
+.action-btns{display:flex;gap:6px;align-items:center}
+.btn-del{height:34px;padding:0 12px;background:#ef4444;color:#fff;font-size:13px;border-radius:8px;flex-shrink:0;border:0;cursor:pointer}
+.btn-toggle{height:34px;padding:0 10px;background:#e5e7eb;color:#333;font-size:13px;border-radius:8px;border:0;cursor:pointer}
+
+/* 単語編集テーブル */
+.word-edit-list{padding:10px 12px;border-top:1px solid #e5e7eb;background:#fff;display:flex;flex-direction:column;gap:10px}
+.edit-row{display:grid;grid-template-columns:1fr 1fr 110px 36px;gap:6px;align-items:center}
+.edit-input{height:38px !important;font-size:14px !important;border-radius:8px !important;padding:0 8px !important}
+.edit-select{height:38px !important;font-size:13px !important;border-radius:8px !important;padding:0 4px !important;background:#fff}
+.btn-icon-del{height:38px;width:36px;background:#fee2e2;color:#ef4444;border:0;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
+.empty-msg{font-size:13px;color:#888;text-align:center;padding:15px 0}
+
+@media(max-width:500px){
+  .edit-row{grid-template-columns:1fr 1fr;row-gap:6px}
+  .edit-row .edit-select{grid-column:span 1}
+  .edit-row .btn-icon-del{grid-column:span 1;width:100%}
+}
+@media(max-width:380px){.jp{font-size:28px}main{padding-left:10px;padding-right:10px}.card{padding:17px 14px}}
+</style>
+</head>
+<body>
+<main>
+<h1>英検対策 一問一答</h1>
+<div class="desc">日本語と品詞を見て、英単語を入力しよう。</div>
+
+<!-- ロック画面（パスワード入力画面） -->
+<section class="card auth-card" id="authSection">
+  <div class="auth-title">🔒 パスワード保護</div>
+  <div class="auth-desc">利用するにはパスワードを入力してください。</div>
+  <input type="password" id="passInput" placeholder="パスワードを入力" style="margin-bottom: 12px; text-align: center;">
+  <button type="button" class="primary" id="loginBtn" style="width: 100%;">解除して始める</button>
+  <div class="auth-error" id="authError"></div>
+</section>
+
+<!-- メインコンテンツ（解除成功後に表示） -->
+<div id="mainContent" class="hidden">
+  <section class="card">
+    <input type="file" id="imageInput" accept="image/*" style="display:none;">
+    <button type="button" class="upload-btn" id="uploadBtn">📷 ノート画像から自動追加する</button>
+    <div id="status" style="font-size:12px;color:#666;margin-top:5px;text-align:center;"></div>
+  </section>
+
+  <section class="card" id="quiz">
+  <div class="top"><span id="count">0 / 0</span><span id="score">正解 0</span></div>
+  <div class="track"><div class="fill" id="fill"></div></div>
+
+  <div class="question">
+  <div class="jp" id="jp">-</div>
+  <div class="pos" id="pos">-</div>
+  </div>
+
+  <input id="input" type="text" inputmode="latin" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="英単語を入力">
+
+  <div class="buttons">
+  <button type="button" class="primary" id="check">答え合わせ</button>
+  <button type="button" class="secondary" id="answer">答えを見る</button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+  <div class="stats"><span id="ok">正解 0</span><span id="ng">不正解 0</span></div>
+  </section>
+
+  <section class="card result hidden" id="result">
+  <div>終了</div>
+  <div class="score" id="finalScore"></div>
+  <div id="rate"></div>
+  <br>
+  <button type="button" class="primary" id="again">もう一度挑戦</button>
+  </section>
+
+  <!-- 写真ごとの登録単語の編集・削除エリア -->
+  <section class="card">
+    <div class="manage-title">
+      <span>📁 登録データ管理</span>
+      <span id="totalWordCount" style="font-size:13px;font-weight:normal;color:#666;">計 0 単語</span>
+    </div>
+    <div id="imageList" class="image-list"></div>
+  </section>
+</div>
+</main>
+
+<script>
+// 設定したいパスワード（必要に応じて変更してください）
+const PASSCODE = "1234";
+
+let words = []; 
+let uploadedImages = []; 
+
+let q = [], i = 0, ok = 0, ng = 0, done = false;
+const $ = id => document.getElementById(id);
+
+function shuffle(a) { return a.slice().sort(() => Math.random() - .5); }
+function norm(s) { return s.trim().toLowerCase(); }
+
+// 認証チェック処理
+function checkPassword() {
+  const inputVal = $("passInput").value;
+  if (inputVal === PASSCODE) {
+    $("authSection").classList.add("hidden");
+    $("mainContent").classList.remove("hidden");
+    start();
+  } else {
+    $("authError").textContent = "パスワードが違います。";
+    $("passInput").value = "";
+    $("passInput").focus();
+  }
+}
+
+function start() {
+  if (words.length === 0) {
+    $("quiz").classList.add("hidden");
+    $("result").classList.add("hidden");
+    $("status").textContent = "単語がありません。画像をアップロードして追加してください。";
+    updateManageUI();
+    return;
+  }
+  $("status").textContent = "";
+  q = shuffle(words);
+  i = 0; ok = 0; ng = 0;
+  $("quiz").classList.remove("hidden");
+  $("result").classList.add("hidden");
+  show();
+  updateManageUI();
+}
+
+function show() {
+  done = false;
+  const w = q[i];
+  $("count").textContent = (i + 1) + " / " + q.length;
+  $("fill").style.width = (i / q.length * 100) + "%";
+  $("jp").textContent = w.jp;
+  $("pos").textContent = w.pos;
+  $("input").value = "";
+  $("input").disabled = false;
+  $("feedback").className = "feedback";
+  $("feedback").innerHTML = "";
+  $("check").textContent = "答え合わせ";
+  $("answer").textContent = "答えを見る";
+  $("input").focus();
+  $("ok").textContent = "正解 " + ok;
+  $("ng").textContent = "不正解 " + ng;
+  $("score").textContent = "正解 " + ok;
+}
+
+function next() {
+  i++;
+  if (i >= q.length) finish();
+  else show();
+}
+
+function judge() {
+  if (done) { next(); return; }
+  const val = $("input").value;
+  if (!val.trim()) {
+    $("feedback").className = "feedback bad";
+    $("feedback").innerHTML = "単語を入力してください。";
+    return;
+  }
+  done = true;
+  const right = norm(val) === norm(q[i].en);
+  if (right) {
+    ok++;
+    $("feedback").className = "feedback good";
+    $("feedback").innerHTML = "正解！<br><span class='answer'>" + q[i].en + "</span>";
+  } else {
+    ng++;
+    $("feedback").className = "feedback bad";
+    $("feedback").innerHTML = "不正解。正解は<br><span class='answer'>" + q[i].en + "</span>";
+  }
+  $("input").disabled = true;
+  $("check").textContent = "次の問題";
+  $("answer").textContent = "次の問題";
+  $("ok").textContent = "正解 " + ok;
+  $("ng").textContent = "不正解 " + ng;
+  $("score").textContent = "正解 " + ok;
+}
+
+function reveal() {
+  if (done) { next(); return; }
+  done = true;
+  ng++;
+  $("feedback").className = "feedback bad";
+  $("feedback").innerHTML = "正解：<span class='answer'>" + q[i].en + "</span>";
+  $("input").disabled = true;
+  $("check").textContent = "次の問題";
+  $("answer").textContent = "次の問題";
+  $("ok").textContent = "正解 " + ok;
+  $("ng").textContent = "不正解 " + ng;
+  $("score").textContent = "正解 " + ok;
+}
+
+function finish() {
+  $("fill").style.width = "100%";
+  $("quiz").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("finalScore").textContent = ok + " / " + q.length;
+  $("rate").textContent = "正答率 " + Math.round(ok / q.length * 100) + "%";
+}
+
+// テキスト解析
+function parseTextToWords(text, sourceId) {
+  const lines = text.split(/\r?\n/);
+  const newWords = [];
+
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
+
+    const match = line.match(/^([a-zA-Batter-zA-Z\s\-]+)[\s:\-=—]+(.+)$/);
+    if (match) {
+      const en = match[1].trim();
+      let jpStr = match[2].trim();
+      let pos = "名詞 (n.)";
+
+      const posMatch = jpStr.match(/(名詞|動詞|形容詞|副詞|\(n\.\)|\(v\.\)|\(a\.\)|\(ad\.\))/);
+      if (posMatch) {
+        const found = posMatch[0];
+        if (found.includes("動詞") || found.includes("v")) pos = "動詞 (v.)";
+        else if (found.includes("形容詞") || found.includes("a.")) pos = "形容詞 (a.)";
+        else if (found.includes("副詞") || found.includes("ad")) pos = "副詞 (ad.)";
+        else pos = "名詞 (n.)";
+
+        jpStr = jpStr.replace(found, "").replace(/[()（）]/g, "").trim();
+      }
+
+      if (en && jpStr) {
+        newWords.push({ 
+          id: "w_" + Math.random().toString(36).substring(2, 9),
+          en: en.toLowerCase(), 
+          pos, 
+          jp: jpStr, 
+          sourceId 
+        });
+      }
+    }
+  }
+  return newWords;
+}
+
+// 写真ごとの削除処理
+function deleteBySourceId(sourceId) {
+  words = words.filter(w => w.sourceId !== sourceId);
+  uploadedImages = uploadedImages.filter(img => img.id !== sourceId);
+  start();
+}
+
+// 単語単体の削除
+function deleteSingleWord(wordId) {
+  words = words.filter(w => w.id !== wordId);
+  start();
+}
+
+// 開閉アコーディオンの切り替え
+function toggleAccordion(imageId) {
+  const img = uploadedImages.find(i => i.id === imageId);
+  if (img) {
+    img.open = !img.open;
+    updateManageUI();
+  }
+}
+
+// 単語フィールドの更新保存
+function updateWordField(wordId, field, value) {
+  const w = words.find(item => item.id === wordId);
+  if (w) {
+    w[field] = value.trim();
+    if (q[i] && q[i].id === wordId) {
+      if (field === 'jp') $("jp").textContent = w.jp;
+      if (field === 'pos') $("pos").textContent = w.pos;
+    }
+  }
+}
+
+// 管理画面UI描画
+function updateManageUI() {
+  $("totalWordCount").textContent = `計 ${words.length} 単語`;
+  const listEl = $("imageList");
+  listEl.innerHTML = "";
+
+  if (uploadedImages.length === 0) {
+    listEl.innerHTML = `<div class="empty-msg">登録されている画像データはありません</div>`;
+    return;
+  }
+
+  uploadedImages.forEach(img => {
+    const imgWords = words.filter(w => w.sourceId === img.id);
+    const card = document.createElement("div");
+    card.className = "image-card";
+
+    const header = document.createElement("div");
+    header.className = "image-header";
+    header.innerHTML = `
+      <div class="image-info" onclick="toggleAccordion('${img.id}')">
+        <div class="image-name">📷 ${img.name}</div>
+        <div class="image-meta">${imgWords.length} 単語 ・ ${img.time}</div>
+      </div>
+      <div class="action-btns">
+        <button type="button" class="btn-toggle" onclick="toggleAccordion('${img.id}')">${img.open ? '閉じる' : '編集'}</button>
+        <button type="button" class="btn-del" onclick="deleteBySourceId('${img.id}')">削除</button>
+      </div>
+    `;
+    card.appendChild(header);
+
+    if (img.open) {
+      const editList = document.createElement("div");
+      editList.className = "word-edit-list";
+
+      if (imgWords.length === 0) {
+        editList.innerHTML = `<div class="empty-msg">この写真の単語はありません</div>`;
+      } else {
+        imgWords.forEach(w => {
+          const row = document.createElement("div");
+          row.className = "edit-row";
+          row.innerHTML = `
+            <input type="text" class="edit-input" value="${w.en}" placeholder="英単語" onchange="updateWordField('${w.id}', 'en', this.value)">
+            <input type="text" class="edit-input" value="${w.jp}" placeholder="日本語" onchange="updateWordField('${w.id}', 'jp', this.value)">
+            <select class="edit-select" onchange="updateWordField('${w.id}', 'pos', this.value)">
+              <option value="名詞 (n.)" ${w.pos.includes('名詞') ? 'selected' : ''}>名詞 (n.)</option>
+              <option value="動詞 (v.)" ${w.pos.includes('動詞') ? 'selected' : ''}>動詞 (v.)</option>
+              <option value="形容詞 (a.)" ${w.pos.includes('形容詞') ? 'selected' : ''}>形容詞 (a.)</option>
+              <option value="副詞 (ad.)" ${w.pos.includes('副詞') ? 'selected' : ''}>副詞 (ad.)</option>
+            </select>
+            <button type="button" class="btn-icon-del" title="削除" onclick="deleteSingleWord('${w.id}')">✕</button>
+          `;
+          editList.appendChild(row);
+        });
+      }
+      card.appendChild(editList);
+    }
+
+    listEl.appendChild(card);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // パスワード認証関連のイベント
+  $("loginBtn").addEventListener("click", checkPassword);
+  $("passInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.keyCode === 13) {
+      checkPassword();
+    }
+  });
+
+  $("check").addEventListener("click", judge);
+  $("answer").addEventListener("click", reveal);
+  $("again").addEventListener("click", start);
+  
+  $("input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.keyCode === 13) {
+      judge();
+    }
+  });
+
+  $("uploadBtn").addEventListener("click", () => $("imageInput").click());
+
+  $("imageInput").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const imageId = "img_" + Date.now();
+    $("status").textContent = "OCRエンジンを準備中...";
+    $("uploadBtn").disabled = true;
+
+    try {
+      const worker = await Tesseract.createWorker(['eng', 'jpn']);
+      
+      $("status").textContent = "画像を解析中...";
+      const { data: { text } } = await worker.recognize(file);
+      await worker.terminate();
+
+      const extractedWords = parseTextToWords(text, imageId);
+
+      if (extractedWords.length > 0) {
+        words = words.concat(extractedWords);
+        
+        const now = new Date();
+        const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+        uploadedImages.push({
+          id: imageId,
+          name: file.name,
+          count: extractedWords.length,
+          time: timeStr,
+          open: true
+        });
+
+        $("status").textContent = `「${file.name}」から ${extractedWords.length} 個の単語を追加しました！`;
+        start();
+      } else {
+        $("status").textContent = "単語を検出できませんでした。明確なテキスト画像をお試しください。";
+      }
+    } catch (err) {
+      console.error(err);
+      $("status").textContent = "画像の解析に失敗しました。";
+    } finally {
+      $("uploadBtn").disabled = false;
+      $("imageInput").value = "";
+    }
+  });
+});
+</script>
+</body>
+</html>
+</html>
