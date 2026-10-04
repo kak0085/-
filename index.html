@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>英検対策 一問一答</title>
 <!-- Tesseract.js (ブラウザ内OCRライブラリ) の読み込み -->
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.min.js@5/dist/tesseract.min.js"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f3f4f6;color:#111;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
@@ -132,7 +132,7 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 </main>
 
 <script>
-// 設定パスワード（1004に設定済み）
+// 設定パスワード
 const PASSCODE = "1004";
 const AUTH_KEY = "app_auth_passcode";
 
@@ -151,7 +151,6 @@ function initAuth() {
   if (savedPass === PASSCODE) {
     unlockApp();
   } else {
-    // パスワードが更新されている、または未認証の場合はロック画面を表示
     $("authSection").classList.remove("hidden");
     $("mainContent").classList.add("hidden");
   }
@@ -168,7 +167,6 @@ function unlockApp() {
 function checkPassword() {
   const inputVal = $("passInput").value;
   if (inputVal === PASSCODE) {
-    // 成功したらブラウザに保存してロック解除
     localStorage.setItem(AUTH_KEY, PASSCODE);
     unlockApp();
   } else {
@@ -269,42 +267,55 @@ function finish() {
   $("rate").textContent = "正答率 " + Math.round(ok / q.length * 100) + "%";
 }
 
-// テキスト解析
+// 高精度テキスト解析・ゴミ文字フィルタリング処理
 function parseTextToWords(text, sourceId) {
   const lines = text.split(/\r?\n/);
   const newWords = [];
 
   for (let line of lines) {
     line = line.trim();
-    if (!line) continue;
+    if (!line || line.length < 3) continue; // 短すぎる行はスキップ
 
-    const match = line.match(/^([a-zA-Batter-zA-Z\s\-]+)[\s:\-=—]+(.+)$/);
-    if (match) {
-      const en = match[1].trim();
-      let jpStr = match[2].trim();
-      let pos = "名詞 (n.)";
+    // 1. 英単語と日本語の分離（さまざまな区切り記号「-」「:」「=」「スペース」に対応）
+    const match = line.match(/^([a-zA-Z\s\-']+?)[\s:\-=—:：]+(.+)$/);
+    if (!match) continue;
 
-      const posMatch = jpStr.match(/(名詞|動詞|形容詞|副詞|\(n\.\)|\(v\.\)|\(a\.\)|\(ad\.\))/);
-      if (posMatch) {
-        const found = posMatch[0];
-        if (found.includes("動詞") || found.includes("v")) pos = "動詞 (v.)";
-        else if (found.includes("形容詞") || found.includes("a.")) pos = "形容詞 (a.)";
-        else if (found.includes("副詞") || found.includes("ad")) pos = "副詞 (ad.)";
-        else pos = "名詞 (n.)";
+    let en = match[1].trim();
+    let jpStr = match[2].trim();
 
-        jpStr = jpStr.replace(found, "").replace(/[()（）]/g, "").trim();
-      }
+    // 2. ゴミ文字除去フィルタ（英単語側）
+    // アルファベット以外の不要な記号を削除
+    en = en.replace(/[^a-zA-Z\s\-']/g, "").trim();
 
-      if (en && jpStr) {
-        newWords.push({ 
-          id: "w_" + Math.random().toString(36).substring(2, 9),
-          en: en.toLowerCase(), 
-          pos, 
-          jp: jpStr, 
-          sourceId 
-        });
-      }
+    // 英単語が2文字未満、または30文字以上のノイズは除外
+    if (en.length < 2 || en.length > 30) continue;
+
+    // 3. 日本語側の処理と品詞抽出
+    let pos = "名詞 (n.)";
+    const posMatch = jpStr.match(/(名詞|動詞|形容詞|副詞|\(n\.\)|\(v\.\)|\(a\.\)|\(ad\.\)|名|動|形|副)/);
+    if (posMatch) {
+      const found = posMatch[0];
+      if (found.includes("動") || found.includes("v")) pos = "動詞 (v.)";
+      else if (found.includes("形") || found.includes("a")) pos = "形容詞 (a.)";
+      else if (found.includes("副") || found.includes("ad")) pos = "副詞 (ad.)";
+      else pos = "名詞 (n.)";
+
+      jpStr = jpStr.replace(found, "").replace(/[()（）\[\]]/g, "").trim();
     }
+
+    // 4. 日本語文字列のノイズ除去（アルファベットや記号のみの誤認識を除外）
+    jpStr = jpStr.replace(/[^\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\u3000-\u303F,、\s]/g, "").trim();
+
+    // 日本語の解釈結果が空になってしまった場合はスキップ
+    if (!jpStr || jpStr.length < 1) continue;
+
+    newWords.push({ 
+      id: "w_" + Math.random().toString(36).substring(2, 9),
+      en: en.toLowerCase(), 
+      pos, 
+      jp: jpStr, 
+      sourceId 
+    });
   }
   return newWords;
 }
@@ -378,7 +389,7 @@ function updateManageUI() {
       editList.className = "word-edit-list";
 
       if (imgWords.length === 0) {
-        editList.innerHTML = `<div class="empty-msg">この写真の単語はありません</div>`;
+        editList.innerHTML = `<div class="empty-msg">抽出できた単語がありません</div>`;
       } else {
         imgWords.forEach(w => {
           const row = document.createElement("div");
@@ -405,15 +416,11 @@ function updateManageUI() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 自動認証確認を実行
   initAuth();
 
-  // パスワード認証関連のイベント
   $("loginBtn").addEventListener("click", checkPassword);
   $("passInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.keyCode === 13) {
-      checkPassword();
-    }
+    if (e.key === "Enter" || e.keyCode === 13) checkPassword();
   });
 
   $("check").addEventListener("click", judge);
@@ -421,9 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("again").addEventListener("click", start);
   
   $("input").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.keyCode === 13) {
-      judge();
-    }
+    if (e.key === "Enter" || e.keyCode === 13) judge();
   });
 
   $("uploadBtn").addEventListener("click", () => $("imageInput").click());
@@ -439,7 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const worker = await Tesseract.createWorker(['eng', 'jpn']);
       
-      $("status").textContent = "画像を解析中...";
+      $("status").textContent = "画像を最適化解析中...";
       const { data: { text } } = await worker.recognize(file);
       await worker.terminate();
 
@@ -461,7 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
         $("status").textContent = `「${file.name}」から ${extractedWords.length} 個の単語を追加しました！`;
         start();
       } else {
-        $("status").textContent = "単語を検出できませんでした。明確なテキスト画像をお試しください。";
+        $("status").textContent = "有効な単語が見つかりませんでした。単語帳のフォーマット（例: apple - りんご）をご確認ください。";
       }
     } catch (err) {
       console.error(err);
