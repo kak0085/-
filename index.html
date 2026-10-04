@@ -87,7 +87,7 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 
 <!-- ロック画面（パスワード入力画面） -->
 <section class="card auth-card" id="authSection">
-  <div class="auth-title">パスワード保護</div>
+  <div class="auth-title">🔒 パスワード保護</div>
   <div class="auth-desc">利用するにはパスワードを入力してください。</div>
   <input type="password" id="passInput" placeholder="パスワードを入力" style="margin-bottom: 12px; text-align: center;">
   <button type="button" class="primary" id="loginBtn" style="width: 100%;">解除して始める</button>
@@ -165,9 +165,9 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
         <span id="totalWordCount" style="font-size:13px;font-weight:normal;color:#666;">計 0 単語</span>
       </div>
 
-      <!-- コード貼り付け用エリア -->
+      <!-- Geminiのコード貼り付け用エリア -->
       <div class="paste-box">
-        <label>AIが出力したコードを貼り付け</label>
+        <label>✨ Geminiが出力したコードを貼り付け</label>
         <input type="text" id="groupNameInput" placeholder="画像名やグループ名（例: ノート1枚目）" style="height:38px;font-size:14px;margin-bottom:8px;">
         <textarea id="pasteInput" rows="3" placeholder='ここに貼り付け'></textarea>
         <button type="button" class="primary" onclick="importFromGemini()" style="width:100%;height:40px;margin-top:8px;font-size:14px;">コードから追加する</button>
@@ -175,7 +175,7 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
       </div>
 
       <div id="imageList" class="image-list"></div>
-      <button type="button" class="secondary" onclick="addNewWord()" style="width:100%;margin-top:12px;">＋ 手動で追加する</button>
+      <button type="button" class="secondary" onclick="addNewWord()" style="width:100%;margin-top:12px;">＋ 手動で1語追加する</button>
     </section>
   </div>
 
@@ -183,13 +183,21 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 </main>
 
 <script>
-// パスワード設定
+// パスワード設定・保存用キー
 const PASSCODE = "1902";
 const AUTH_KEY = "app_auth_passcode";
+const STORAGE_GROUPS_KEY = "eiken_app_groups";
+const STORAGE_WORDS_KEY = "eiken_app_words";
 
-// 初期データ（初期状態は空）
-let groups = [];
-let words = [];
+// データの読み込み（localStorageに保存されている場合はそれを使い、無ければ空配列）
+let groups = JSON.parse(localStorage.getItem(STORAGE_GROUPS_KEY)) || [];
+let words = JSON.parse(localStorage.getItem(STORAGE_WORDS_KEY)) || [];
+
+// データをlocalStorageに保存する関数
+function saveData() {
+  localStorage.setItem(STORAGE_GROUPS_KEY, JSON.stringify(groups));
+  localStorage.setItem(STORAGE_WORDS_KEY, JSON.stringify(words));
+}
 
 let q = [], i = 0, ok = 0, ng = 0, done = false;
 const $ = id => document.getElementById(id);
@@ -342,6 +350,7 @@ function finish() {
 
 function deleteSingleWord(wordId) {
   words = words.filter(w => w.id !== wordId);
+  saveData(); // 保存
   start();
 }
 
@@ -349,6 +358,7 @@ function deleteGroup(groupId) {
   if (confirm("この画像に登録されているすべての単語を削除しますか？")) {
     words = words.filter(w => w.groupId !== groupId);
     groups = groups.filter(g => g.id !== groupId);
+    saveData(); // 保存
     start();
   }
 }
@@ -357,6 +367,7 @@ function toggleAccordion(groupId) {
   const g = groups.find(item => item.id === groupId);
   if (g) {
     g.open = !g.open;
+    saveData(); // アコーディオンの開閉状態も保存
     updateManageUI();
   }
 }
@@ -365,6 +376,7 @@ function updateWordField(wordId, field, value) {
   const w = words.find(item => item.id === wordId);
   if (w) {
     w[field] = value.trim();
+    saveData(); // 保存
     if (q[i] && q[i].id === wordId) {
       if (field === 'jp') $("jp").textContent = w.jp;
       if (field === 'pos') $("pos").textContent = w.pos;
@@ -387,6 +399,7 @@ function addNewWord() {
     pos: "名詞 (n.)",
     jp: "新しい単語"
   });
+  saveData(); // 保存
   start();
 }
 
@@ -418,6 +431,7 @@ function importFromGemini() {
       }));
 
       words = words.concat(newItems);
+      saveData(); // 保存
       
       $("pasteInput").value = "";
       $("groupNameInput").value = "";
