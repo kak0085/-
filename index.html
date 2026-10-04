@@ -48,8 +48,45 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 /* モード切替・設定エリア */
 .setting-row{display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#444;font-weight:bold;padding:6px 0}
 .setting-row select{width:auto;height:40px;padding:0 10px;font-size:14px}
-.toggle-btn{height:34px;padding:0 14px;border-radius:20px;border:1px solid #ccc;background:#e5e7eb;font-size:13px;font-weight:bold;cursor:pointer}
-.toggle-btn.on{background:#111;color:#fff;border-color:#111}
+
+/* トグルスイッチのスタイル */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .3s;
+  border-radius: 28px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+input:checked + .slider {
+  background-color: #111;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
 
 /* 写真別データ管理エリア */
 .manage-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
@@ -179,14 +216,17 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
       <div class="setting-row">
         <span>出題順序の設定:</span>
         <select id="orderSelect" onchange="start()">
-          <option value="random">ランダムに出題</option>
           <option value="sequential">リスト順</option>
+          <option value="random">ランダムに出題</option>
         </select>
       </div>
       <hr style="border:0;border-top:1px solid #eee;margin:10px 0;">
       <div class="setting-row">
         <span>クイズの品詞表示:</span>
-        <button type="button" id="posToggleBtn" class="toggle-btn on" onclick="togglePosVisibility()">ON</button>
+        <label class="toggle-switch">
+          <input type="checkbox" id="posToggleCheckbox" onchange="togglePosVisibility()">
+          <span class="slider"></span>
+        </label>
       </div>
     </section>
 
@@ -282,23 +322,15 @@ function checkPassword() {
 }
 
 function togglePosVisibility() {
-  showPos = !showPos;
+  showPos = $("posToggleCheckbox").checked;
   saveData();
-  updatePosToggleUI();
   if (q.length > 0 && q[i]) {
     $("pos").style.display = showPos ? "inline-block" : "none";
   }
 }
 
 function updatePosToggleUI() {
-  const btn = $("posToggleBtn");
-  if (showPos) {
-    btn.textContent = "ON";
-    btn.className = "toggle-btn on";
-  } else {
-    btn.textContent = "OFF";
-    btn.className = "toggle-btn";
-  }
+  $("posToggleCheckbox").checked = showPos;
 }
 
 function switchPage(pageId) {
