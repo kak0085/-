@@ -35,8 +35,8 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 .bad{background:#fff0f0}
 .answer{font-size:21px;font-weight:700}
 .stats{display:flex;justify-content:space-between;margin-top:12px;color:#777;font-size:13px}
-.result{text-align:center;padding:32px 18px}
-.score{font-size:48px;font-weight:800;margin:15px 0}
+.result{text-align:center;padding:24px 18px}
+.score{font-size:40px;font-weight:800;margin:10px 0}
 .hidden{display:none !important}
 
 /* パスワード保護用 */
@@ -45,9 +45,11 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 .auth-desc{font-size:14px;color:#666;margin-bottom:20px}
 .auth-error{color:#ef4444;font-size:13px;margin-top:10px;min-height:20px}
 
-/* モード切替エリア */
-.mode-select{display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#444;font-weight:bold}
-.mode-select select{width:auto;height:40px;padding:0 10px;font-size:14px}
+/* モード切替・設定エリア */
+.setting-row{display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#444;font-weight:bold;padding:6px 0}
+.setting-row select{width:auto;height:40px;padding:0 10px;font-size:14px}
+.toggle-btn{height:34px;padding:0 14px;border-radius:20px;border:1px solid #ccc;background:#e5e7eb;font-size:13px;font-weight:bold;cursor:pointer}
+.toggle-btn.on{background:#111;color:#fff;border-color:#111}
 
 /* 写真別データ管理エリア */
 .manage-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
@@ -76,6 +78,14 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 .paste-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:15px}
 .paste-box label{font-size:13px;font-weight:bold;color:#444;display:block;margin-bottom:6px}
 
+/* 間違えた問題一覧スタイリング */
+.wrong-list-box{margin:18px 0;text-align:left;background:#f9fafb;border:1px solid #fee2e2;border-radius:12px;padding:12px 14px;max-height:260px;overflow-y:auto}
+.wrong-list-title{font-size:14px;font-weight:bold;color:#dc2626;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.wrong-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:14px}
+.wrong-item:last-child{border-bottom:0}
+.wrong-item .en{font-weight:bold;color:#111}
+.wrong-item .jp-pos{color:#666;font-size:13px;text-align:right}
+
 @media(max-width:500px){
   .edit-row{grid-template-columns:1fr 1fr;row-gap:6px}
   .edit-row .edit-select{grid-column:span 1}
@@ -91,7 +101,7 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 
 <!-- ロック画面（パスワード入力画面） -->
 <section class="card auth-card" id="authSection">
-  <div class="auth-title">🔒 パスワード保護</div>
+  <div class="auth-title">パスワード保護</div>
   <div class="auth-desc">利用するにはパスワードを入力してください。</div>
   <input type="password" id="passInput" placeholder="パスワードを入力" style="margin-bottom: 12px; text-align: center;">
   <button type="button" class="primary" id="loginBtn" style="width: 100%;">解除して始める</button>
@@ -103,8 +113,8 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
   
   <!-- 画面切り替えタブ -->
   <nav class="tab-nav">
-    <button type="button" class="tab-btn active" id="tabQuizBtn" onclick="switchPage('quizPage')">📝 クイズ</button>
-    <button type="button" class="tab-btn" id="tabManageBtn" onclick="switchPage('managePage')">⚙️ データ管理</button>
+    <button type="button" class="tab-btn active" id="tabQuizBtn" onclick="switchPage('quizPage')">クイズ</button>
+    <button type="button" class="tab-btn" id="tabManageBtn" onclick="switchPage('managePage')">データ管理</button>
   </nav>
 
   <!-- ページ1: クイズ画面 -->
@@ -115,7 +125,7 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
     <section class="card hidden" id="noWordsMsg">
       <div class="empty-msg">
         単語データがまだ登録されていません。<br>
-        上部の「⚙️ データ管理」タブから単語を追加してください。
+        上部の「データ管理」タブから単語を追加してください。
       </div>
       <button type="button" class="primary" onclick="switchPage('managePage')" style="width:100%;margin-top:10px;">データ管理を開く</button>
     </section>
@@ -140,32 +150,50 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
       <div class="stats"><span id="ok">正解 0</span><span id="ng">不正解 0</span></div>
     </section>
 
+    <!-- 結果表示画面 -->
     <section class="card result hidden" id="result">
-      <div>終了</div>
+      <div>テスト結果</div>
       <div class="score" id="finalScore"></div>
       <div id="rate"></div>
-      <br>
-      <button type="button" class="primary" id="again">もう一度挑戦</button>
+
+      <!-- 間違えた問題一覧エリア -->
+      <div id="wrongListBox" class="wrong-list-box hidden">
+        <div class="wrong-list-title">
+          <span>間違えた問題</span>
+          <span id="wrongListCount">0問</span>
+        </div>
+        <div id="wrongListItems"></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:15px;">
+        <button type="button" class="primary" id="retryWrongBtn" onclick="startRetryWrong()">間違えた問題だけで再挑戦</button>
+        <button type="button" class="secondary" id="again" onclick="start()">すべての問題から再スタート</button>
+      </div>
     </section>
   </div>
 
   <!-- ページ2: データ管理画面 -->
   <div id="managePage" class="hidden">
-    <!-- 出題設定エリア -->
+    <!-- 出題・表示設定エリア -->
     <section class="card" style="padding: 14px 17px; margin-bottom: 15px;">
-      <div class="mode-select">
-        <span>🔀 出題順序の設定:</span>
+      <div class="setting-row">
+        <span>出題順序の設定:</span>
         <select id="orderSelect" onchange="start()">
           <option value="random">ランダムに出題</option>
           <option value="sequential">リスト順</option>
         </select>
+      </div>
+      <hr style="border:0;border-top:1px solid #eee;margin:10px 0;">
+      <div class="setting-row">
+        <span>クイズの品詞表示:</span>
+        <button type="button" id="posToggleBtn" class="toggle-btn on" onclick="togglePosVisibility()">ON</button>
       </div>
     </section>
 
     <!-- 単語編集・追加エリア -->
     <section class="card">
       <div class="manage-title">
-        <span>📁 登録データ一覧</span>
+        <span>登録データ一覧</span>
         <span id="totalWordCount" style="font-size:13px;font-weight:normal;color:#666;">計 0 単語</span>
       </div>
 
@@ -192,22 +220,37 @@ const PASSCODE = "1902";
 const AUTH_KEY = "app_auth_passcode";
 const STORAGE_GROUPS_KEY = "eiken_app_groups";
 const STORAGE_WORDS_KEY = "eiken_app_words";
+const STORAGE_POS_SHOW_KEY = "eiken_app_show_pos";
 
 // データの読み込み
 let groups = JSON.parse(localStorage.getItem(STORAGE_GROUPS_KEY)) || [];
 let words = JSON.parse(localStorage.getItem(STORAGE_WORDS_KEY)) || [];
+let showPos = localStorage.getItem(STORAGE_POS_SHOW_KEY) !== "false"; // デフォルトは表示(true)
 
 // データをlocalStorageに保存
 function saveData() {
   localStorage.setItem(STORAGE_GROUPS_KEY, JSON.stringify(groups));
   localStorage.setItem(STORAGE_WORDS_KEY, JSON.stringify(words));
+  localStorage.setItem(STORAGE_POS_SHOW_KEY, showPos);
 }
 
 let q = [], i = 0, ok = 0, ng = 0, done = false;
+let wrongQueue = []; // 間違えた問題を保持する配列
 const $ = id => document.getElementById(id);
 
 function shuffle(a) { return a.slice().sort(() => Math.random() - .5); }
 function norm(s) { return s.trim().toLowerCase(); }
+
+// 品詞の標準化処理（コード貼り付け時の品詞判定用）
+function normalizePos(rawPos) {
+  if (!rawPos) return "名詞 (n.)";
+  const p = rawPos.toString();
+  if (p.includes("動詞") || p.includes("(v.)") || p === "v") return "動詞 (v.)";
+  if (p.includes("形容詞") || p.includes("(a.)") || p === "adj" || p === "a") return "形容詞 (a.)";
+  if (p.includes("副詞") || p.includes("(ad.)") || p === "adv" || p === "ad") return "副詞 (ad.)";
+  if (p.includes("名詞") || p.includes("(n.)") || p === "n") return "名詞 (n.)";
+  return p;
+}
 
 function initAuth() {
   const savedPass = localStorage.getItem(AUTH_KEY);
@@ -222,6 +265,7 @@ function initAuth() {
 function unlockApp() {
   $("authSection").classList.add("hidden");
   $("mainContent").classList.remove("hidden");
+  updatePosToggleUI();
   start();
 }
 
@@ -234,6 +278,26 @@ function checkPassword() {
     $("authError").textContent = "パスワードが違います。";
     $("passInput").value = "";
     $("passInput").focus();
+  }
+}
+
+function togglePosVisibility() {
+  showPos = !showPos;
+  saveData();
+  updatePosToggleUI();
+  if (q.length > 0 && q[i]) {
+    $("pos").style.display = showPos ? "inline-block" : "none";
+  }
+}
+
+function updatePosToggleUI() {
+  const btn = $("posToggleBtn");
+  if (showPos) {
+    btn.textContent = "ON";
+    btn.className = "toggle-btn on";
+  } else {
+    btn.textContent = "OFF";
+    btn.className = "toggle-btn";
   }
 }
 
@@ -272,11 +336,30 @@ function start() {
     q = validWords.slice();
   }
 
+  wrongQueue = [];
   i = 0; ok = 0; ng = 0;
   $("quiz").classList.remove("hidden");
   $("result").classList.add("hidden");
   show();
   updateManageUI();
+}
+
+// 間違えた問題だけで再挑戦スタート
+function startRetryWrong() {
+  if (wrongQueue.length === 0) return;
+  
+  const orderMode = $("orderSelect").value;
+  if (orderMode === "random") {
+    q = shuffle(wrongQueue);
+  } else {
+    q = wrongQueue.slice();
+  }
+
+  wrongQueue = [];
+  i = 0; ok = 0; ng = 0;
+  $("quiz").classList.remove("hidden");
+  $("result").classList.add("hidden");
+  show();
 }
 
 function show() {
@@ -286,6 +369,8 @@ function show() {
   $("fill").style.width = (i / q.length * 100) + "%";
   $("jp").textContent = w.jp || "（未設定）";
   $("pos").textContent = w.pos || "名詞 (n.)";
+  $("pos").style.display = showPos ? "inline-block" : "none";
+  
   $("input").value = "";
   $("input").disabled = false;
   $("feedback").className = "feedback";
@@ -320,6 +405,7 @@ function judge() {
     $("feedback").innerHTML = "正解！<br><span class='answer'>" + q[i].en + "</span>";
   } else {
     ng++;
+    wrongQueue.push(q[i]); // ミスリストに追加
     $("feedback").className = "feedback bad";
     $("feedback").innerHTML = "不正解。正解は<br><span class='answer'>" + q[i].en + "</span>";
   }
@@ -335,6 +421,7 @@ function reveal() {
   if (done) { next(); return; }
   done = true;
   ng++;
+  wrongQueue.push(q[i]); // ミスリストに追加
   $("feedback").className = "feedback bad";
   $("feedback").innerHTML = "正解：<span class='answer'>" + q[i].en + "</span>";
   $("input").disabled = true;
@@ -351,6 +438,35 @@ function finish() {
   $("result").classList.remove("hidden");
   $("finalScore").textContent = ok + " / " + q.length;
   $("rate").textContent = "正答率 " + Math.round(ok / q.length * 100) + "%";
+
+  const retryBtn = $("retryWrongBtn");
+  const wrongBox = $("wrongListBox");
+  const wrongListItems = $("wrongListItems");
+
+  // 間違えた問題の一覧を描画
+  if (wrongQueue.length > 0) {
+    wrongBox.classList.remove("hidden");
+    $("wrongListCount").textContent = wrongQueue.length + "問";
+    wrongListItems.innerHTML = "";
+    
+    wrongQueue.forEach(w => {
+      const item = document.createElement("div");
+      item.className = "wrong-item";
+      item.innerHTML = `
+        <div class="en">${w.en}</div>
+        <div class="jp-pos">${w.jp} <span style="font-size:11px;color:#888;">(${w.pos})</span></div>
+      `;
+      wrongListItems.appendChild(item);
+    });
+
+    retryBtn.classList.remove("hidden");
+    retryBtn.textContent = `間違えた問題 (${wrongQueue.length}問) で再挑戦`;
+  } else {
+    wrongBox.classList.add("hidden");
+    wrongListItems.innerHTML = "";
+    retryBtn.classList.add("hidden");
+    $("rate").innerHTML += "<br><br><span style='color:#16a34a;font-weight:bold;font-size:18px;'>全問正解！おめでとうございます！</span>";
+  }
 }
 
 function deleteSingleWord(wordId) {
@@ -448,7 +564,7 @@ function importFromGemini() {
         id: "w_g_" + Date.now() + "_" + idx,
         groupId: newGroupId,
         en: item.en || "",
-        pos: item.pos || "名詞 (n.)",
+        pos: normalizePos(item.pos),
         jp: item.jp || ""
       }));
 
@@ -486,7 +602,7 @@ function updateManageUI() {
     header.className = "image-header";
     header.innerHTML = `
       <div class="image-info" onclick="toggleAccordion('${g.id}')">
-        <div class="image-name">📷 ${g.name}</div>
+        <div class="image-name">${g.name}</div>
         <div class="image-meta">${groupWords.length} 単語</div>
       </div>
       <div class="action-btns">
@@ -545,7 +661,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   $("check").addEventListener("click", judge);
   $("answer").addEventListener("click", reveal);
-  $("again").addEventListener("click", start);
   
   $("input").addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.keyCode === 13) judge();
