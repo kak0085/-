@@ -67,7 +67,7 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 .edit-input{height:38px !important;font-size:14px !important;border-radius:8px !important;padding:0 8px !important}
 .edit-select{height:38px !important;font-size:13px !important;border-radius:8px !important;padding:0 4px !important;background:#fff}
 .btn-icon-del{height:38px;width:36px;background:#fee2e2;color:#ef4444;border:0;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
-.empty-msg{font-size:13px;color:#888;text-align:center;padding:15px 0}
+.empty-msg{font-size:14px;color:#888;text-align:center;padding:25px 0}
 
 /* 貼り付けエリア */
 .paste-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:15px}
@@ -87,7 +87,7 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 
 <!-- ロック画面（パスワード入力画面） -->
 <section class="card auth-card" id="authSection">
-  <div class="auth-title">🔒 パスワード保護</div>
+  <div class="auth-title">パスワード保護</div>
   <div class="auth-desc">利用するにはパスワードを入力してください。</div>
   <input type="password" id="passInput" placeholder="パスワードを入力" style="margin-bottom: 12px; text-align: center;">
   <button type="button" class="primary" id="loginBtn" style="width: 100%;">解除して始める</button>
@@ -107,6 +107,15 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
   <div id="quizPage">
     <div class="desc">日本語と品詞を見て、英単語を入力しよう。</div>
     
+    <!-- 未登録時の案内表示 -->
+    <section class="card hidden" id="noWordsMsg">
+      <div class="empty-msg">
+        単語データがまだ登録されていません。<br>
+        上部の「⚙️ データ管理」タブから単語を追加してください。
+      </div>
+      <button type="button" class="primary" onclick="switchPage('managePage')" style="width:100%;margin-top:10px;">データ管理を開く</button>
+    </section>
+
     <section class="card" id="quiz">
       <div class="top"><span id="count">0 / 0</span><span id="score">正解 0</span></div>
       <div class="track"><div class="fill" id="fill"></div></div>
@@ -141,10 +150,10 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
     <!-- 出題設定エリア -->
     <section class="card" style="padding: 14px 17px; margin-bottom: 15px;">
       <div class="mode-select">
-        <span> 出題順序の設定:</span>
+        <span>🔀 出題順序の設定:</span>
         <select id="orderSelect" onchange="start()">
           <option value="random">ランダムに出題</option>
-          <option value="sequential">単語帳順</option>
+          <option value="sequential">登録順（順番通り）</option>
         </select>
       </div>
     </section>
@@ -174,38 +183,13 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 </main>
 
 <script>
-const PASSCODE = "3456";
+// パスワード設定
+const PASSCODE = "4567";
 const AUTH_KEY = "app_auth_passcode";
 
-let groups = [
-  { id: "g_1", name: "1枚目のノート", open: false },
-  { id: "g_2", name: "2枚目のノート", open: false },
-  { id: "g_3", name: "3枚目のノート", open: false },
-  { id: "g_4", name: "4枚目のノート", open: false }
-];
-
-let words = [
-  // 1枚目
-  { id: "w_1_0", groupId: "g_1", en: "progress", pos: "名詞 (n.)", jp: "進展, 進歩する" },
-  { id: "w_1_1", groupId: "g_1", en: "accomplish", pos: "動詞 (v.)", jp: "成し遂げる" },
-  { id: "w_1_2", groupId: "g_1", en: "diplomacy", pos: "名詞 (n.)", jp: "外交" },
-  { id: "w_1_3", groupId: "g_1", en: "humid", pos: "形容詞 (a.)", jp: "湿気のある" },
-  { id: "w_1_4", groupId: "g_1", en: "rise", pos: "動詞 (v.)", jp: "上がる, 生じる" },
-  { id: "w_1_5", groupId: "g_1", en: "fine", pos: "形容詞 (a.)", jp: "洗練された" },
-
-  // 2枚目
-  { id: "w_2_0", groupId: "g_2", en: "resemble", pos: "動詞 (v.)", jp: "似ている" },
-  { id: "w_2_1", groupId: "g_2", en: "halt", pos: "動詞 (v.)", jp: "止まる" },
-  { id: "w_2_2", groupId: "g_2", en: "landscape painting", pos: "名詞 (n.)", jp: "風景画" },
-
-  // 3枚目
-  { id: "w_3_0", groupId: "g_3", en: "pursue", pos: "動詞 (v.)", jp: "追い求める" },
-  { id: "w_3_1", groupId: "g_3", en: "civic", pos: "形容詞 (a.)", jp: "市民の" },
-
-  // 4枚目
-  { id: "w_4_0", groupId: "g_4", en: "flog", pos: "動詞 (v.)", jp: "衰える" },
-  { id: "w_4_1", groupId: "g_4", en: "nightmare", pos: "名詞 (n.)", jp: "悪夢" }
-];
+// 初期データ（初期状態は空）
+let groups = [];
+let words = [];
 
 let q = [], i = 0, ok = 0, ng = 0, done = false;
 const $ = id => document.getElementById(id);
@@ -261,9 +245,12 @@ function start() {
   if (words.length === 0) {
     $("quiz").classList.add("hidden");
     $("result").classList.add("hidden");
+    $("noWordsMsg").classList.remove("hidden");
     updateManageUI();
     return;
   }
+
+  $("noWordsMsg").classList.add("hidden");
 
   const orderMode = $("orderSelect").value;
   if (orderMode === "random") {
@@ -388,7 +375,7 @@ function updateWordField(wordId, field, value) {
 function addNewWord() {
   let defaultGroup = groups[0];
   if (!defaultGroup) {
-    defaultGroup = { id: "g_" + Date.now(), name: "手動追加分", open: true };
+    defaultGroup = { id: "g_" + Date.now(), name: "新規グループ", open: true };
     groups.push(defaultGroup);
   }
 
