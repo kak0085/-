@@ -8,8 +8,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:#f3f4f6;color:#111;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 main{width:min(100%,600px);margin:auto;padding:18px 14px 35px}
-h1{font-size:23px;margin:4px 0 12px;text-align:center}
-.desc{font-size:14px;color:#666;margin-bottom:16px;text-align:center}
+h1{font-size:23px;margin:4px 0 16px;text-align:center}
 
 /* タブナビゲーション */
 .tab-nav{display:flex;background:#e5e7eb;padding:4px;border-radius:14px;margin-bottom:16px}
@@ -26,7 +25,7 @@ h1{font-size:23px;margin:4px 0 12px;text-align:center}
 input[type="text"], input[type="password"], textarea, select{display:block;width:100%;border:2px solid #ddd;border-radius:12px;padding:10px 14px;font-size:16px;outline:0}
 input[type="text"], input[type="password"]{height:54px;font-size:20px}
 input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus{border-color:#555}
-.buttons{display:block;margin-top:10px}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
 button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 .primary{background:#111;color:#fff}
 .secondary{background:#e9eaec;color:#111}
@@ -156,8 +155,6 @@ input:checked + .slider:before {
 
   <!-- ページ1: クイズ画面 -->
   <div id="quizPage">
-    <div class="desc">日本語と品詞を見て、英単語を入力しよう。</div>
-    
     <!-- 未登録時の案内表示 -->
     <section class="card hidden" id="noWordsMsg">
       <div class="empty-msg">
@@ -179,7 +176,8 @@ input:checked + .slider:before {
       <input id="input" type="text" inputmode="latin" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="英単語を入力">
 
       <div class="buttons">
-        <button type="button" class="primary" id="check" style="width:100%;">答え合わせ</button>
+        <button type="button" class="primary" id="check">答え合わせ</button>
+        <button type="button" class="secondary" id="answer">答えを見る</button>
       </div>
 
       <div class="feedback" id="feedback"></div>
@@ -416,6 +414,7 @@ function show() {
   $("feedback").className = "feedback";
   $("feedback").innerHTML = "";
   $("check").textContent = "答え合わせ";
+  $("answer").textContent = "答えを見る";
   $("input").focus();
   $("ok").textContent = "正解 " + ok;
   $("ng").textContent = "不正解 " + ng;
@@ -450,6 +449,22 @@ function judge() {
   }
   $("input").disabled = true;
   $("check").textContent = "次の問題";
+  $("answer").textContent = "次の問題";
+  $("ok").textContent = "正解 " + ok;
+  $("ng").textContent = "不正解 " + ng;
+  $("score").textContent = "正解 " + ok;
+}
+
+function reveal() {
+  if (done) { next(); return; }
+  done = true;
+  ng++;
+  wrongQueue.push(q[i]); // ミスリストに追加
+  $("feedback").className = "feedback bad";
+  $("feedback").innerHTML = "正解：<span class='answer'>" + q[i].en + "</span>";
+  $("input").disabled = true;
+  $("check").textContent = "次の問題";
+  $("answer").textContent = "次の問題";
   $("ok").textContent = "正解 " + ok;
   $("ng").textContent = "不正解 " + ng;
   $("score").textContent = "正解 " + ok;
@@ -686,6 +701,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   $("check").addEventListener("click", judge);
+  $("answer").addEventListener("click", reveal);
   
   $("input").addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.keyCode === 13) judge();
