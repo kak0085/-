@@ -26,6 +26,7 @@ input[type="text"], input[type="password"], textarea, select{display:block;width
 input[type="text"], input[type="password"]{height:54px;font-size:20px}
 input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus{border-color:#555}
 .buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.buttons.single{grid-template-columns:1fr}
 button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 .primary{background:#111;color:#fff}
 .secondary{background:#e9eaec;color:#111}
@@ -175,7 +176,7 @@ input:checked + .slider:before {
 
       <input id="input" type="text" inputmode="latin" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="英単語を入力">
 
-      <div class="buttons">
+      <div class="buttons" id="btnContainer">
         <button type="button" class="primary" id="check">答え合わせ</button>
         <button type="button" class="secondary" id="answer">答えを見る</button>
       </div>
@@ -262,9 +263,8 @@ const STORAGE_POS_SHOW_KEY = "eiken_app_show_pos";
 // データの読み込み
 let groups = JSON.parse(localStorage.getItem(STORAGE_GROUPS_KEY)) || [];
 let words = JSON.parse(localStorage.getItem(STORAGE_WORDS_KEY)) || [];
-let showPos = localStorage.getItem(STORAGE_POS_SHOW_KEY) !== "false"; // デフォルトは表示(true)
+let showPos = localStorage.getItem(STORAGE_POS_SHOW_KEY) !== "false";
 
-// データをlocalStorageに保存
 function saveData() {
   localStorage.setItem(STORAGE_GROUPS_KEY, JSON.stringify(groups));
   localStorage.setItem(STORAGE_WORDS_KEY, JSON.stringify(words));
@@ -272,13 +272,22 @@ function saveData() {
 }
 
 let q = [], i = 0, ok = 0, ng = 0, done = false;
-let wrongQueue = []; // 間違えた問題を保持する配列
+let wrongQueue = [];
 const $ = id => document.getElementById(id);
 
 function shuffle(a) { return a.slice().sort(() => Math.random() - .5); }
-function norm(s) { return s.trim().toLowerCase(); }
 
-// 品詞の標準化処理（どんな表記が来ても4つのフォーマットのいずれかに統一する）
+// 大文字・小文字を無視し、全角文字の半角化および前後空白の除去を行う正規化関数
+function norm(s) {
+  if (!s) return "";
+  return s
+    .trim()
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(ch) {
+      return String.fromCharCode(ch.charCodeAt(0) - 0xfee0);
+    })
+    .toLowerCase();
+}
+
 function normalizePos(rawPos) {
   if (!rawPos) return "名詞 (n.)";
   const p = rawPos.toString().toLowerCase();
@@ -295,7 +304,7 @@ function normalizePos(rawPos) {
   if (p.includes("名詞") || p.includes("n.") || p.includes("noun") || p === "n") {
     return "名詞 (n.)";
   }
-  return "名詞 (n.)"; // 該当しない場合はデフォルトで名詞
+  return "名詞 (n.)";
 }
 
 function initAuth() {
@@ -382,7 +391,6 @@ function start() {
   updateManageUI();
 }
 
-// 間違えた問題だけで再挑戦スタート
 function startRetryWrong() {
   if (wrongQueue.length === 0) return;
   
@@ -413,8 +421,12 @@ function show() {
   $("input").disabled = false;
   $("feedback").className = "feedback";
   $("feedback").innerHTML = "";
+
+  // ボタン状態の初期化
+  $("btnContainer").classList.remove("single");
   $("check").textContent = "答え合わせ";
-  $("answer").textContent = "答えを見る";
+  $("answer").classList.remove("hidden");
+
   $("input").focus();
   $("ok").textContent = "正解 " + ok;
   $("ng").textContent = "不正解 " + ng;
@@ -427,6 +439,17 @@ function next() {
   else show();
 }
 
+function setNextState() {
+  done = true;
+  $("input").disabled = true;
+  $("btnContainer").classList.add("single");
+  $("check").textContent = "次の問題";
+  $("answer").classList.add("hidden");
+  $("ok").textContent = "正解 " + ok;
+  $("ng").textContent = "不正解 " + ng;
+  $("score").textContent = "正解 " + ok;
+}
+
 function judge() {
   if (done) { next(); return; }
   const val = $("input").value;
@@ -435,39 +458,30 @@ function judge() {
     $("feedback").innerHTML = "単語を入力してください。";
     return;
   }
-  done = true;
+  
+  // 大文字小文字の違いを無視して正誤判定
   const right = norm(val) === norm(q[i].en);
+  
   if (right) {
     ok++;
     $("feedback").className = "feedback good";
     $("feedback").innerHTML = "正解！<br><span class='answer'>" + q[i].en + "</span>";
   } else {
     ng++;
-    wrongQueue.push(q[i]); // ミスリストに追加
+    wrongQueue.push(q[i]);
     $("feedback").className = "feedback bad";
     $("feedback").innerHTML = "不正解。正解は<br><span class='answer'>" + q[i].en + "</span>";
   }
-  $("input").disabled = true;
-  $("check").textContent = "次の問題";
-  $("answer").textContent = "次の問題";
-  $("ok").textContent = "正解 " + ok;
-  $("ng").textContent = "不正解 " + ng;
-  $("score").textContent = "正解 " + ok;
+  setNextState();
 }
 
 function reveal() {
   if (done) { next(); return; }
-  done = true;
   ng++;
-  wrongQueue.push(q[i]); // ミスリストに追加
+  wrongQueue.push(q[i]);
   $("feedback").className = "feedback bad";
   $("feedback").innerHTML = "正解：<span class='answer'>" + q[i].en + "</span>";
-  $("input").disabled = true;
-  $("check").textContent = "次の問題";
-  $("answer").textContent = "次の問題";
-  $("ok").textContent = "正解 " + ok;
-  $("ng").textContent = "不正解 " + ng;
-  $("score").textContent = "正解 " + ok;
+  setNextState();
 }
 
 function finish() {
@@ -481,7 +495,6 @@ function finish() {
   const wrongBox = $("wrongListBox");
   const wrongListItems = $("wrongListItems");
 
-  // 間違えた問題の一覧を描画
   if (wrongQueue.length > 0) {
     wrongBox.classList.remove("hidden");
     $("wrongListCount").textContent = wrongQueue.length + "問";
@@ -662,7 +675,6 @@ function updateManageUI() {
           const isFirst = globalIdx === 0;
           const isLast = globalIdx === words.length - 1;
 
-          // 単語の現在の品詞を標準化
           const currentPos = normalizePos(w.pos);
 
           const row = document.createElement("div");
