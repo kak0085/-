@@ -8,8 +8,14 @@
 *{box-sizing:border-box}
 body{margin:0;background:#f3f4f6;color:#111;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 main{width:min(100%,600px);margin:auto;padding:18px 14px 35px}
-h1{font-size:23px;margin:4px 0 4px}
-.desc{font-size:14px;color:#666;margin-bottom:16px}
+h1{font-size:23px;margin:4px 0 12px;text-align:center}
+.desc{font-size:14px;color:#666;margin-bottom:16px;text-align:center}
+
+/* タブナビゲーション */
+.tab-nav{display:flex;background:#e5e7eb;padding:4px;border-radius:14px;margin-bottom:16px}
+.tab-btn{flex:1;height:42px;border:0;background:transparent;border-radius:10px;font-size:15px;font-weight:600;color:#666;cursor:pointer;transition:.2s}
+.tab-btn.active{background:#fff;color:#111;box-shadow:0 2px 6px #00000012}
+
 .card{background:#fff;border-radius:18px;padding:20px 17px;box-shadow:0 2px 12px #00000012;margin-bottom:15px}
 .top{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:8px}
 .track{height:7px;background:#e5e7eb;border-radius:9px;overflow:hidden;margin-bottom:24px}
@@ -33,20 +39,35 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 .score{font-size:48px;font-weight:800;margin:15px 0}
 .hidden{display:none !important}
 
-/* パスワード保護用スタイリング */
+/* パスワード保護用 */
 .auth-card{text-align:center;padding:30px 20px}
 .auth-title{font-size:20px;font-weight:700;margin-bottom:10px}
 .auth-desc{font-size:14px;color:#666;margin-bottom:20px}
 .auth-error{color:#ef4444;font-size:13px;margin-top:10px;min-height:20px}
 
-/* 写真別データ管理エリアのスタイル */
+/* モード切替エリア */
+.mode-select{display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#444;font-weight:bold}
+.mode-select select{width:auto;height:40px;padding:0 10px;font-size:14px}
+
+/* 写真別データ管理エリア */
 .manage-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
 .image-list{display:flex;flex-direction:column;gap:10px}
+.image-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.image-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff}
+.image-info{display:flex;flex-direction:column;gap:2px;overflow:hidden;padding-right:8px;cursor:pointer}
+.image-name{font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.image-meta{font-size:12px;color:#666}
+.action-btns{display:flex;gap:6px;align-items:center}
+.btn-del{height:34px;padding:0 12px;background:#ef4444;color:#fff;font-size:13px;border-radius:8px;flex-shrink:0;border:0;cursor:pointer}
+.btn-toggle{height:34px;padding:0 10px;background:#e5e7eb;color:#333;font-size:13px;border-radius:8px;border:0;cursor:pointer}
+
+/* 単語編集テーブル */
 .word-edit-list{padding:10px 12px;border-top:1px solid #e5e7eb;background:#fff;display:flex;flex-direction:column;gap:10px}
 .edit-row{display:grid;grid-template-columns:1fr 1fr 110px 36px;gap:6px;align-items:center}
 .edit-input{height:38px !important;font-size:14px !important;border-radius:8px !important;padding:0 8px !important}
 .edit-select{height:38px !important;font-size:13px !important;border-radius:8px !important;padding:0 4px !important;background:#fff}
 .btn-icon-del{height:38px;width:36px;background:#fee2e2;color:#ef4444;border:0;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
+.empty-msg{font-size:13px;color:#888;text-align:center;padding:15px 0}
 
 /* 貼り付けエリア */
 .paste-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:15px}
@@ -63,7 +84,6 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 <body>
 <main>
 <h1>英検対策 一問一答</h1>
-<div class="desc">日本語と品詞を見て、英単語を入力しよう。</div>
 
 <!-- ロック画面（パスワード入力画面） -->
 <section class="card auth-card" id="authSection">
@@ -76,66 +96,117 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 
 <!-- メインコンテンツ（解除成功後に表示） -->
 <div id="mainContent" class="hidden">
-  <section class="card" id="quiz">
-  <div class="top"><span id="count">0 / 0</span><span id="score">正解 0</span></div>
-  <div class="track"><div class="fill" id="fill"></div></div>
+  
+  <!-- 画面切り替えタブ -->
+  <nav class="tab-nav">
+    <button type="button" class="tab-btn active" id="tabQuizBtn" onclick="switchPage('quizPage')">📝 クイズ</button>
+    <button type="button" class="tab-btn" id="tabManageBtn" onclick="switchPage('managePage')">⚙️ データ管理</button>
+  </nav>
 
-  <div class="question">
-  <div class="jp" id="jp">-</div>
-  <div class="pos" id="pos">-</div>
+  <!-- ページ1: クイズ画面 -->
+  <div id="quizPage">
+    <div class="desc">日本語と品詞を見て、英単語を入力しよう。</div>
+    
+    <section class="card" id="quiz">
+      <div class="top"><span id="count">0 / 0</span><span id="score">正解 0</span></div>
+      <div class="track"><div class="fill" id="fill"></div></div>
+
+      <div class="question">
+        <div class="jp" id="jp">-</div>
+        <div class="pos" id="pos">-</div>
+      </div>
+
+      <input id="input" type="text" inputmode="latin" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="英単語を入力">
+
+      <div class="buttons">
+        <button type="button" class="primary" id="check">答え合わせ</button>
+        <button type="button" class="secondary" id="answer">答えを見る</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+      <div class="stats"><span id="ok">正解 0</span><span id="ng">不正解 0</span></div>
+    </section>
+
+    <section class="card result hidden" id="result">
+      <div>終了</div>
+      <div class="score" id="finalScore"></div>
+      <div id="rate"></div>
+      <br>
+      <button type="button" class="primary" id="again">もう一度挑戦</button>
+    </section>
   </div>
 
-  <input id="input" type="text" inputmode="latin" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="英単語を入力">
+  <!-- ページ2: データ管理画面 -->
+  <div id="managePage" class="hidden">
+    <!-- 出題設定エリア -->
+    <section class="card" style="padding: 14px 17px; margin-bottom: 15px;">
+      <div class="mode-select">
+        <span> 出題順序の設定:</span>
+        <select id="orderSelect" onchange="start()">
+          <option value="random">ランダムに出題</option>
+          <option value="sequential">単語帳順</option>
+        </select>
+      </div>
+    </section>
 
-  <div class="buttons">
-  <button type="button" class="primary" id="check">答え合わせ</button>
-  <button type="button" class="secondary" id="answer">答えを見る</button>
+    <!-- 単語編集・追加エリア -->
+    <section class="card">
+      <div class="manage-title">
+        <span>📁 登録データ一覧</span>
+        <span id="totalWordCount" style="font-size:13px;font-weight:normal;color:#666;">計 0 単語</span>
+      </div>
+
+      <!-- Geminiのコード貼り付け用エリア -->
+      <div class="paste-box">
+        <label>AIが出力したコードを貼り付け</label>
+        <input type="text" id="groupNameInput" placeholder="画像名やグループ名（例: ノート1枚目）" style="height:38px;font-size:14px;margin-bottom:8px;">
+        <textarea id="pasteInput" rows="3" placeholder='[{ en: "word", pos: "名詞 (n.)", jp: "単語" }]'></textarea>
+        <button type="button" class="primary" onclick="importFromGemini()" style="width:100%;height:40px;margin-top:8px;font-size:14px;">コードから追加する</button>
+        <div id="importError" style="color:#ef4444;font-size:12px;margin-top:4px;"></div>
+      </div>
+
+      <div id="imageList" class="image-list"></div>
+      <button type="button" class="secondary" onclick="addNewWord()" style="width:100%;margin-top:12px;">＋ 手動で1語追加する</button>
+    </section>
   </div>
 
-  <div class="feedback" id="feedback"></div>
-  <div class="stats"><span id="ok">正解 0</span><span id="ng">不正解 0</span></div>
-  </section>
-
-  <section class="card result hidden" id="result">
-  <div>終了</div>
-  <div class="score" id="finalScore"></div>
-  <div id="rate"></div>
-  <br>
-  <button type="button" class="primary" id="again">もう一度挑戦</button>
-  </section>
-
-  <!-- 単語編集・追加エリア -->
-  <section class="card">
-    <div class="manage-title">
-      <span>📁 登録データ管理</span>
-      <span id="totalWordCount" style="font-size:13px;font-weight:normal;color:#666;">計 0 単語</span>
-    </div>
-
-    <!-- Geminiのコード貼り付け用エリア -->
-    <div class="paste-box">
-      <label>✨ Geminiが出力したコードを貼り付け</label>
-      <textarea id="pasteInput" rows="3" placeholder='[{ en: "word", pos: "名詞 (n.)", jp: "単語" }]'></textarea>
-      <button type="button" class="primary" onclick="importFromGemini()" style="width:100%;height:40px;margin-top:8px;font-size:14px;">コードから追加する</button>
-      <div id="importError" style="color:#ef4444;font-size:12px;margin-top:4px;"></div>
-    </div>
-
-    <div id="imageList" class="image-list"></div>
-    <button type="button" class="secondary" onclick="addNewWord()" style="width:100%;margin-top:12px;">＋ 手動で1語追加する</button>
-  </section>
 </div>
 </main>
 
 <script>
-const PASSCODE = "2345";
+const PASSCODE = "3456";
 const AUTH_KEY = "app_auth_passcode";
 
-const INITIAL_WORDS = [
-  { en: "progress", pos: "名詞 (n.)", jp: "進展, 進歩する" },
-  { en: "accomplish", pos: "動詞 (v.)", jp: "成し遂げる" },
-  { en: "diplomacy", pos: "名詞 (n.)", jp: "外交" }
+let groups = [
+  { id: "g_1", name: "1枚目のノート", open: false },
+  { id: "g_2", name: "2枚目のノート", open: false },
+  { id: "g_3", name: "3枚目のノート", open: false },
+  { id: "g_4", name: "4枚目のノート", open: false }
 ];
 
-let words = [];
+let words = [
+  // 1枚目
+  { id: "w_1_0", groupId: "g_1", en: "progress", pos: "名詞 (n.)", jp: "進展, 進歩する" },
+  { id: "w_1_1", groupId: "g_1", en: "accomplish", pos: "動詞 (v.)", jp: "成し遂げる" },
+  { id: "w_1_2", groupId: "g_1", en: "diplomacy", pos: "名詞 (n.)", jp: "外交" },
+  { id: "w_1_3", groupId: "g_1", en: "humid", pos: "形容詞 (a.)", jp: "湿気のある" },
+  { id: "w_1_4", groupId: "g_1", en: "rise", pos: "動詞 (v.)", jp: "上がる, 生じる" },
+  { id: "w_1_5", groupId: "g_1", en: "fine", pos: "形容詞 (a.)", jp: "洗練された" },
+
+  // 2枚目
+  { id: "w_2_0", groupId: "g_2", en: "resemble", pos: "動詞 (v.)", jp: "似ている" },
+  { id: "w_2_1", groupId: "g_2", en: "halt", pos: "動詞 (v.)", jp: "止まる" },
+  { id: "w_2_2", groupId: "g_2", en: "landscape painting", pos: "名詞 (n.)", jp: "風景画" },
+
+  // 3枚目
+  { id: "w_3_0", groupId: "g_3", en: "pursue", pos: "動詞 (v.)", jp: "追い求める" },
+  { id: "w_3_1", groupId: "g_3", en: "civic", pos: "形容詞 (a.)", jp: "市民の" },
+
+  // 4枚目
+  { id: "w_4_0", groupId: "g_4", en: "flog", pos: "動詞 (v.)", jp: "衰える" },
+  { id: "w_4_1", groupId: "g_4", en: "nightmare", pos: "名詞 (n.)", jp: "悪夢" }
+];
+
 let q = [], i = 0, ok = 0, ng = 0, done = false;
 const $ = id => document.getElementById(id);
 
@@ -155,14 +226,6 @@ function initAuth() {
 function unlockApp() {
   $("authSection").classList.add("hidden");
   $("mainContent").classList.remove("hidden");
-  
-  words = INITIAL_WORDS.map((w, index) => ({
-    id: "w_" + index,
-    en: w.en,
-    pos: w.pos,
-    jp: w.jp
-  }));
-  
   start();
 }
 
@@ -178,6 +241,22 @@ function checkPassword() {
   }
 }
 
+// ページ切り替え関数
+function switchPage(pageId) {
+  if (pageId === 'quizPage') {
+    $("quizPage").classList.remove("hidden");
+    $("managePage").classList.add("hidden");
+    $("tabQuizBtn").classList.add("active");
+    $("tabManageBtn").classList.remove("active");
+  } else {
+    $("quizPage").classList.add("hidden");
+    $("managePage").classList.remove("hidden");
+    $("tabQuizBtn").classList.remove("active");
+    $("tabManageBtn").classList.add("active");
+    updateManageUI();
+  }
+}
+
 function start() {
   if (words.length === 0) {
     $("quiz").classList.add("hidden");
@@ -185,7 +264,14 @@ function start() {
     updateManageUI();
     return;
   }
-  q = shuffle(words);
+
+  const orderMode = $("orderSelect").value;
+  if (orderMode === "random") {
+    q = shuffle(words);
+  } else {
+    q = words.slice();
+  }
+
   i = 0; ok = 0; ng = 0;
   $("quiz").classList.remove("hidden");
   $("result").classList.add("hidden");
@@ -272,6 +358,22 @@ function deleteSingleWord(wordId) {
   start();
 }
 
+function deleteGroup(groupId) {
+  if (confirm("この画像に登録されているすべての単語を削除しますか？")) {
+    words = words.filter(w => w.groupId !== groupId);
+    groups = groups.filter(g => g.id !== groupId);
+    start();
+  }
+}
+
+function toggleAccordion(groupId) {
+  const g = groups.find(item => item.id === groupId);
+  if (g) {
+    g.open = !g.open;
+    updateManageUI();
+  }
+}
+
 function updateWordField(wordId, field, value) {
   const w = words.find(item => item.id === wordId);
   if (w) {
@@ -284,9 +386,16 @@ function updateWordField(wordId, field, value) {
 }
 
 function addNewWord() {
+  let defaultGroup = groups[0];
+  if (!defaultGroup) {
+    defaultGroup = { id: "g_" + Date.now(), name: "手動追加分", open: true };
+    groups.push(defaultGroup);
+  }
+
   const newId = "w_" + Date.now();
   words.unshift({
     id: newId,
+    groupId: defaultGroup.id,
     en: "newword",
     pos: "名詞 (n.)",
     jp: "新しい単語"
@@ -294,26 +403,37 @@ function addNewWord() {
   start();
 }
 
-/* Geminiで生成したコードの一括読み込み関数 */
 function importFromGemini() {
   const text = $("pasteInput").value.trim();
+  let groupName = $("groupNameInput").value.trim();
   $("importError").textContent = "";
   
   if (!text) return;
+  if (!groupName) groupName = "画像 " + (groups.length + 1);
 
   try {
-    // JavaScript配列の文字列を安全に評価して読み込む
     const parsed = new Function(`return ${text}`)();
     if (Array.isArray(parsed)) {
+      const newGroupId = "g_" + Date.now();
+      
+      groups.push({
+        id: newGroupId,
+        name: groupName,
+        open: true
+      });
+
       const newItems = parsed.map((item, idx) => ({
         id: "w_g_" + Date.now() + "_" + idx,
+        groupId: newGroupId,
         en: item.en || "",
         pos: item.pos || "名詞 (n.)",
         jp: item.jp || ""
       }));
 
-      words = newItems.concat(words);
+      words = words.concat(newItems);
+      
       $("pasteInput").value = "";
+      $("groupNameInput").value = "";
       start();
     } else {
       $("importError").textContent = "配列フォーマット形式で貼り付けてください。";
@@ -328,27 +448,59 @@ function updateManageUI() {
   const listEl = $("imageList");
   listEl.innerHTML = "";
 
-  const editList = document.createElement("div");
-  editList.className = "word-edit-list";
+  if (groups.length === 0) {
+    listEl.innerHTML = `<div class="empty-msg">登録されている画像データはありません</div>`;
+    return;
+  }
 
-  words.forEach(w => {
-    const row = document.createElement("div");
-    row.className = "edit-row";
-    row.innerHTML = `
-      <input type="text" class="edit-input" value="${w.en}" placeholder="英単語" onchange="updateWordField('${w.id}', 'en', this.value)">
-      <input type="text" class="edit-input" value="${w.jp}" placeholder="日本語" onchange="updateWordField('${w.id}', 'jp', this.value)">
-      <select class="edit-select" onchange="updateWordField('${w.id}', 'pos', this.value)">
-        <option value="名詞 (n.)" ${w.pos.includes('名詞') ? 'selected' : ''}>名詞 (n.)</option>
-        <option value="動詞 (v.)" ${w.pos.includes('動詞') ? 'selected' : ''}>動詞 (v.)</option>
-        <option value="形容詞 (a.)" ${w.pos.includes('形容詞') ? 'selected' : ''}>形容詞 (a.)</option>
-        <option value="副詞 (ad.)" ${w.pos.includes('副詞') ? 'selected' : ''}>副詞 (ad.)</option>
-      </select>
-      <button type="button" class="btn-icon-del" title="削除" onclick="deleteSingleWord('${w.id}')">✕</button>
+  groups.forEach(g => {
+    const groupWords = words.filter(w => w.groupId === g.id);
+    const card = document.createElement("div");
+    card.className = "image-card";
+
+    const header = document.createElement("div");
+    header.className = "image-header";
+    header.innerHTML = `
+      <div class="image-info" onclick="toggleAccordion('${g.id}')">
+        <div class="image-name">📷 ${g.name}</div>
+        <div class="image-meta">${groupWords.length} 単語</div>
+      </div>
+      <div class="action-btns">
+        <button type="button" class="btn-toggle" onclick="toggleAccordion('${g.id}')">${g.open ? '閉じる' : '編集'}</button>
+        <button type="button" class="btn-del" onclick="deleteGroup('${g.id}')">削除</button>
+      </div>
     `;
-    editList.appendChild(row);
-  });
+    card.appendChild(header);
 
-  listEl.appendChild(editList);
+    if (g.open) {
+      const editList = document.createElement("div");
+      editList.className = "word-edit-list";
+
+      if (groupWords.length === 0) {
+        editList.innerHTML = `<div class="empty-msg">この画像に単語はありません</div>`;
+      } else {
+        groupWords.forEach(w => {
+          const row = document.createElement("div");
+          row.className = "edit-row";
+          row.innerHTML = `
+            <input type="text" class="edit-input" value="${w.en}" placeholder="英単語" onchange="updateWordField('${w.id}', 'en', this.value)">
+            <input type="text" class="edit-input" value="${w.jp}" placeholder="日本語" onchange="updateWordField('${w.id}', 'jp', this.value)">
+            <select class="edit-select" onchange="updateWordField('${w.id}', 'pos', this.value)">
+              <option value="名詞 (n.)" ${w.pos.includes('名詞') ? 'selected' : ''}>名詞 (n.)</option>
+              <option value="動詞 (v.)" ${w.pos.includes('動詞') ? 'selected' : ''}>動詞 (v.)</option>
+              <option value="形容詞 (a.)" ${w.pos.includes('形容詞') ? 'selected' : ''}>形容詞 (a.)</option>
+              <option value="副詞 (ad.)" ${w.pos.includes('副詞') ? 'selected' : ''}>副詞 (ad.)</option>
+            </select>
+            <button type="button" class="btn-icon-del" title="削除" onclick="deleteSingleWord('${w.id}')">✕</button>
+          `;
+          editList.appendChild(row);
+        });
+      }
+      card.appendChild(editList);
+    }
+
+    listEl.appendChild(card);
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
