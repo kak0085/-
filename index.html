@@ -132,8 +132,9 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 </main>
 
 <script>
-// 設定したいパスワード（必要に応じて変更してください）
-const PASSCODE = "1234";
+// 設定パスワード（1004に設定済み）
+const PASSCODE = "1004";
+const AUTH_KEY = "app_auth_passcode";
 
 let words = []; 
 let uploadedImages = []; 
@@ -144,13 +145,32 @@ const $ = id => document.getElementById(id);
 function shuffle(a) { return a.slice().sort(() => Math.random() - .5); }
 function norm(s) { return s.trim().toLowerCase(); }
 
+// 起動時の自動ログイン確認
+function initAuth() {
+  const savedPass = localStorage.getItem(AUTH_KEY);
+  if (savedPass === PASSCODE) {
+    unlockApp();
+  } else {
+    // パスワードが更新されている、または未認証の場合はロック画面を表示
+    $("authSection").classList.remove("hidden");
+    $("mainContent").classList.add("hidden");
+  }
+}
+
+// アプリのロック解除処理
+function unlockApp() {
+  $("authSection").classList.add("hidden");
+  $("mainContent").classList.remove("hidden");
+  start();
+}
+
 // 認証チェック処理
 function checkPassword() {
   const inputVal = $("passInput").value;
   if (inputVal === PASSCODE) {
-    $("authSection").classList.add("hidden");
-    $("mainContent").classList.remove("hidden");
-    start();
+    // 成功したらブラウザに保存してロック解除
+    localStorage.setItem(AUTH_KEY, PASSCODE);
+    unlockApp();
   } else {
     $("authError").textContent = "パスワードが違います。";
     $("passInput").value = "";
@@ -385,6 +405,9 @@ function updateManageUI() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // 自動認証確認を実行
+  initAuth();
+
   // パスワード認証関連のイベント
   $("loginBtn").addEventListener("click", checkPassword);
   $("passInput").addEventListener("keydown", (e) => {
@@ -451,5 +474,4 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 </body>
-</html>
 </html>
