@@ -73,7 +73,7 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
   fill: currentColor;
 }
 
-/* パスワード保護用 */
+/* パスワード保護・メンテナンス用 */
 .auth-card{text-align:center;padding:30px 20px}
 .auth-title{font-size:20px;font-weight:700;margin-bottom:10px}
 .auth-desc{font-size:14px;color:#666;margin-bottom:20px}
@@ -226,6 +226,15 @@ input:checked + .slider:before {
   <div class="auth-error" id="authError"></div>
 </section>
 
+<!-- メンテナンス表示画面 -->
+<section class="card auth-card hidden" id="maintSection">
+  <div class="auth-title" style="font-size:24px; color:#ef4444; margin-bottom:15px;">メンテナンス中</div>
+  <div class="auth-desc" style="font-size:15px; color:#444; line-height:1.6;">
+    現在システム調整のためメンテナンスを行っております。<br>
+    しばらく時間をおいてから再度アクセスしてください。
+  </div>
+</section>
+
 <!-- メインコンテンツ（認証成功後に表示） -->
 <div id="mainContent" class="hidden">
   
@@ -360,7 +369,15 @@ input:checked + .slider:before {
   <div class="admin-container">
     <div class="admin-header-title">管理者設定</div>
 
-    <div class="admin-section-box" style="text-align:center; padding: 25px 20px;">
+    <div class="admin-section-box">
+      <div class="setting-row">
+        <span>メンテナンスモード:</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="maintToggleCheckbox" onchange="toggleMaintenanceMode()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <hr style="border:0;border-top:1px solid #eee;margin:4px 0;">
       <button type="button" class="primary" onclick="openPassChangeModal()" style="width:100%; height:50px; font-size:16px;">パスワード変更</button>
       <button type="button" class="primary" onclick="openAdminPassChangeModal()" style="width:100%; height:50px; font-size:16px;">管理者パスワード変更</button>
     </div>
@@ -432,7 +449,7 @@ input:checked + .slider:before {
     </div>
 
     <div class="form-group">
-      <label>新しい管理者パスワード（1回目）</label>
+      <label>新しい管理者パスワード</label>
       <div class="password-wrapper">
         <input type="password" id="newAdminPass1" placeholder="新しい管理者パスワード">
         <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newAdminPass1', this)">
@@ -442,7 +459,7 @@ input:checked + .slider:before {
     </div>
 
     <div class="form-group">
-      <label>新しい管理者パスワード（2回目・確認）</label>
+      <label>新しい管理者パスワード（確認）</label>
       <div class="password-wrapper">
         <input type="password" id="newAdminPass2" placeholder="新しい管理者パスワード（再入力）">
         <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newAdminPass2', this)">
@@ -472,6 +489,7 @@ const STORAGE_AUTH_PASS_KEY = "app_auth_passcode";
 const STORAGE_GROUPS_KEY = "eiken_app_groups";
 const STORAGE_WORDS_KEY = "eiken_app_words";
 const STORAGE_POS_SHOW_KEY = "eiken_app_show_pos";
+const STORAGE_MAINT_MODE_KEY = "eiken_app_maint_mode";
 
 const SESSION_ADMIN_AUTH_KEY = "app_admin_authenticated";
 
@@ -485,6 +503,7 @@ let adminPasscode = localStorage.getItem(STORAGE_ADMIN_PASS_KEY) || DEFAULT_ADMI
 let groups = JSON.parse(localStorage.getItem(STORAGE_GROUPS_KEY)) || [];
 let words = JSON.parse(localStorage.getItem(STORAGE_WORDS_KEY)) || [];
 let showPos = localStorage.getItem(STORAGE_POS_SHOW_KEY) !== "false";
+let isMaintMode = localStorage.getItem(STORAGE_MAINT_MODE_KEY) === "true";
 
 function saveData() {
   localStorage.setItem(STORAGE_GROUPS_KEY, JSON.stringify(groups));
@@ -492,6 +511,7 @@ function saveData() {
   localStorage.setItem(STORAGE_POS_SHOW_KEY, showPos);
   localStorage.setItem(STORAGE_SITE_PASS_KEY, sitePasscode);
   localStorage.setItem(STORAGE_ADMIN_PASS_KEY, adminPasscode);
+  localStorage.setItem(STORAGE_MAINT_MODE_KEY, isMaintMode);
 }
 
 let q = [], i = 0, ok = 0, ng = 0, done = false;
@@ -540,12 +560,26 @@ function initAuth() {
     unlockApp();
   } else {
     $("authSection").classList.remove("hidden");
+    $("maintSection").classList.add("hidden");
     $("mainContent").classList.add("hidden");
   }
 }
 
 function unlockApp() {
   $("authSection").classList.add("hidden");
+
+  // 管理者端末かどうかをチェック
+  const isAdmin = sessionStorage.getItem(SESSION_ADMIN_AUTH_KEY) === "true";
+
+  // メンテナンスモード中で一般ユーザーの場合
+  if (isMaintMode && !isAdmin) {
+    $("maintSection").classList.remove("hidden");
+    $("mainContent").classList.add("hidden");
+    return;
+  }
+
+  // 通常表示（または管理者表示）
+  $("maintSection").classList.add("hidden");
   $("mainContent").classList.remove("hidden");
   updatePosToggleUI();
   start();
@@ -580,6 +614,10 @@ function checkAdminPassword() {
     sessionStorage.setItem(SESSION_ADMIN_AUTH_KEY, "true");
     closeAdminAuthModal();
     openAdminPanelModal();
+    // 管理者として認証されたため画面を更新
+    if (!$("authSection").classList.contains("hidden") || !$("maintSection").classList.contains("hidden")) {
+      unlockApp();
+    }
   } else {
     $("adminAuthError").textContent = "パスワードが正しくありません。";
     $("adminPassInput").value = "";
@@ -588,11 +626,17 @@ function checkAdminPassword() {
 }
 
 function openAdminPanelModal() {
+  $("maintToggleCheckbox").checked = isMaintMode;
   $("adminPanelModal").classList.remove("hidden");
 }
 
 function closeAdminPanelModal() {
   $("adminPanelModal").classList.add("hidden");
+}
+
+function toggleMaintenanceMode() {
+  isMaintMode = $("maintToggleCheckbox").checked;
+  saveData();
 }
 
 /* --- 1. サイトパスワード変更モーダル画面制御 --- */
@@ -673,7 +717,7 @@ function saveAdminPassword() {
   }
 
   if (newPass1 !== newPass2) {
-    $("adminPassModalMsg").textContent = "新しい管理者パスワード（1回目・2回目）が一致しません。";
+    $("adminPassModalMsg").textContent = "新しい管理者パスワードが一致しません。";
     return;
   }
 
