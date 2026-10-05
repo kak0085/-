@@ -8,7 +8,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:#f3f4f6;color:#111;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
 main{width:min(100%,600px);margin:auto;padding:18px 14px 35px}
-h1{font-size:23px;margin:4px 0 16px;text-align:center}
+h1{font-size:23px;margin:4px 0 16px;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none;}
 
 /* タブナビゲーション */
 .tab-nav{display:flex;background:#e5e7eb;padding:4px;border-radius:14px;margin-bottom:16px}
@@ -23,7 +23,7 @@ h1{font-size:23px;margin:4px 0 16px;text-align:center}
 .jp{font-size:32px;font-weight:700;line-height:1.35}
 .pos{display:inline-block;margin:10px auto 0;padding:5px 10px;border-radius:8px;background:#eee;color:#555;font-size:14px}
 input[type="text"], input[type="password"], textarea, select{display:block;width:100%;border:2px solid #ddd;border-radius:12px;padding:10px 14px;font-size:16px;outline:0}
-input[type="text"], input[type="password"]{height:54px;font-size:20px}
+input[type="text"], input[type="password"]{height:46px;font-size:16px}
 input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus{border-color:#555}
 .buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
 .buttons.single{grid-template-columns:1fr}
@@ -123,6 +123,12 @@ input:checked + .slider:before {
 .wrong-item .en{font-weight:bold;color:#111}
 .wrong-item .jp-pos{color:#666;font-size:13px;text-align:right}
 
+/* モーダル表示エリア */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999;padding:15px}
+.modal-content{background:#fff;border-radius:18px;padding:24px 20px;width:min(100%,420px);box-shadow:0 10px 25px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
+.form-group{margin-bottom:12px;text-align:left;}
+.form-group label{font-size:12px;font-weight:bold;color:#555;display:block;margin-bottom:4px;}
+
 @media(max-width:500px){
   .edit-row{grid-template-columns:1fr 1fr;row-gap:6px}
   .edit-row .edit-select{grid-column:span 1}
@@ -134,13 +140,14 @@ input:checked + .slider:before {
 </head>
 <body>
 <main>
-<h1>一問一答</h1>
+<!-- 5回クリックで管理者メニューが開くタイトル -->
+<h1 id="appTitle" onclick="handleTitleClick()">一問一答</h1>
 
 <!-- ロック画面（パスワード入力画面） -->
 <section class="card auth-card" id="authSection">
   <div class="auth-title">パスワード保護</div>
   <div class="auth-desc">利用するにはパスワードを入力してください。</div>
-  <input type="password" id="passInput" placeholder="パスワードを入力" style="margin-bottom: 12px; text-align: center;">
+  <input type="password" id="passInput" placeholder="パスワードを入力" style="margin-bottom: 12px; text-align: center; height:54px; font-size:20px;">
   <button type="button" class="primary" id="loginBtn" style="width: 100%;">解除して始める</button>
   <div class="auth-error" id="authError"></div>
 </section>
@@ -174,7 +181,7 @@ input:checked + .slider:before {
         <div class="pos" id="pos">-</div>
       </div>
 
-      <input id="input" type="text" inputmode="latin" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="英単語を入力">
+      <input id="input" type="text" inputmode="latin" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="英単語を入力" style="height:54px; font-size:20px;">
 
       <div class="buttons" id="btnContainer">
         <button type="button" class="primary" id="check">答え合わせ</button>
@@ -252,15 +259,66 @@ input:checked + .slider:before {
 </div>
 </main>
 
+<!-- 管理者認証モーダル -->
+<div id="adminAuthModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="auth-title">管理者認証</div>
+    <div class="auth-desc">管理者パスワードを入力してください。</div>
+    <input type="password" id="adminPassInput" placeholder="管理者パスワード" style="margin-bottom:12px;text-align:center;">
+    <div style="display:flex;gap:8px;">
+      <button type="button" class="secondary" onclick="closeAdminAuthModal()" style="flex:1;">キャンセル</button>
+      <button type="button" class="primary" onclick="checkAdminPassword()" style="flex:1;">ログイン</button>
+    </div>
+    <div class="auth-error" id="adminAuthError"></div>
+  </div>
+</div>
+
+<!-- 管理者設定画面モーダル -->
+<div id="adminPanelModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="auth-title" style="margin-bottom:15px;">サイトパスワードの変更</div>
+    
+    <div class="form-group">
+      <label>① 現行のサイトパスワード</label>
+      <input type="password" id="currentSitePassInput" placeholder="現在の利用用パスワード">
+    </div>
+
+    <div class="form-group">
+      <label>② 管理者パスワード</label>
+      <input type="password" id="adminVerifyPassInput" placeholder="管理者パスワード（0530）">
+    </div>
+
+    <div class="form-group">
+      <label>③ 新しいサイトパスワード（1回目）</label>
+      <input type="password" id="newSitePassInput1" placeholder="新しいパスワード">
+    </div>
+
+    <div class="form-group">
+      <label>④ 新しいサイトパスワード（2回目・確認）</label>
+      <input type="password" id="newSitePassInput2" placeholder="新しいパスワード（再入力）">
+    </div>
+
+    <div id="adminMsg" style="font-size:13px;margin:10px 0;text-align:center;min-height:18px;"></div>
+
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button type="button" class="secondary" onclick="closeAdminPanelModal()" style="flex:1;">閉じる</button>
+      <button type="button" class="primary" onclick="saveNewSitePassword()" style="flex:1;">変更を保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// パスワード設定・保存用キー
-const PASSCODE = "1902";
-const AUTH_KEY = "app_auth_passcode";
+// 設定保持キー
+const DEFAULT_SITE_PASS = "1902";
+const ADMIN_PASS = "0530";
+
+const STORAGE_SITE_PASS_KEY = "eiken_app_site_passcode";
 const STORAGE_GROUPS_KEY = "eiken_app_groups";
 const STORAGE_WORDS_KEY = "eiken_app_words";
 const STORAGE_POS_SHOW_KEY = "eiken_app_show_pos";
 
-// データの読み込み
+// パスワードなどのデータ読み込み
+let sitePasscode = localStorage.getItem(STORAGE_SITE_PASS_KEY) || DEFAULT_SITE_PASS;
 let groups = JSON.parse(localStorage.getItem(STORAGE_GROUPS_KEY)) || [];
 let words = JSON.parse(localStorage.getItem(STORAGE_WORDS_KEY)) || [];
 let showPos = localStorage.getItem(STORAGE_POS_SHOW_KEY) !== "false";
@@ -269,11 +327,110 @@ function saveData() {
   localStorage.setItem(STORAGE_GROUPS_KEY, JSON.stringify(groups));
   localStorage.setItem(STORAGE_WORDS_KEY, JSON.stringify(words));
   localStorage.setItem(STORAGE_POS_SHOW_KEY, showPos);
+  localStorage.setItem(STORAGE_SITE_PASS_KEY, sitePasscode);
 }
 
 let q = [], i = 0, ok = 0, ng = 0, done = false;
 let wrongQueue = [];
 const $ = id => document.getElementById(id);
+
+// 連続クリックカウンター
+let titleClickCount = 0;
+let titleClickTimer = null;
+
+function handleTitleClick() {
+  titleClickCount++;
+  clearTimeout(titleClickTimer);
+  
+  if (titleClickCount >= 5) {
+    titleClickCount = 0;
+    openAdminAuthModal();
+  } else {
+    titleClickTimer = setTimeout(() => {
+      titleClickCount = 0;
+    }, 2000); // 2秒以内に5回タップ
+  }
+}
+
+function openAdminAuthModal() {
+  $("adminAuthError").textContent = "";
+  $("adminPassInput").value = "";
+  $("adminAuthModal").classList.remove("hidden");
+  $("adminPassInput").focus();
+}
+
+function closeAdminAuthModal() {
+  $("adminAuthModal").classList.add("hidden");
+}
+
+function checkAdminPassword() {
+  const inputVal = $("adminPassInput").value;
+  if (inputVal === ADMIN_PASS) {
+    closeAdminAuthModal();
+    openAdminPanelModal();
+  } else {
+    $("adminAuthError").textContent = "パスワードが正しくありません。";
+    $("adminPassInput").value = "";
+    $("adminPassInput").focus();
+  }
+}
+
+function openAdminPanelModal() {
+  $("adminMsg").textContent = "";
+  $("currentSitePassInput").value = "";
+  $("adminVerifyPassInput").value = "";
+  $("newSitePassInput1").value = "";
+  $("newSitePassInput2").value = "";
+  $("adminPanelModal").classList.remove("hidden");
+}
+
+function closeAdminPanelModal() {
+  $("adminPanelModal").classList.add("hidden");
+}
+
+function saveNewSitePassword() {
+  const curPass = $("currentSitePassInput").value;
+  const adminPass = $("adminVerifyPassInput").value;
+  const newPass1 = $("newSitePassInput1").value;
+  const newPass2 = $("newSitePassInput2").value;
+
+  $("adminMsg").style.color = "#ef4444";
+
+  // 入力チェック
+  if (!curPass || !adminPass || !newPass1 || !newPass2) {
+    $("adminMsg").textContent = "すべての項目を入力してください。";
+    return;
+  }
+
+  // 現行サイトパスワードの確認
+  if (curPass !== sitePasscode) {
+    $("adminMsg").textContent = "現行のサイトパスワードが違います。";
+    return;
+  }
+
+  // 管理者パスワードの確認
+  if (adminPass !== ADMIN_PASS) {
+    $("adminMsg").textContent = "管理者パスワードが違います。";
+    return;
+  }
+
+  // 新しいパスワードの一致判定
+  if (newPass1 !== newPass2) {
+    $("adminMsg").textContent = "新しいパスワードが一致しません。";
+    return;
+  }
+
+  // 成功時処理
+  sitePasscode = newPass1;
+  saveData();
+
+  $("adminMsg").style.color = "#16a34a";
+  $("adminMsg").textContent = "パスワードを更新・保存しました！";
+
+  setTimeout(() => {
+    closeAdminPanelModal();
+  }, 1200);
+}
 
 function shuffle(a) { return a.slice().sort(() => Math.random() - .5); }
 
@@ -308,8 +465,8 @@ function normalizePos(rawPos) {
 }
 
 function initAuth() {
-  const savedPass = localStorage.getItem(AUTH_KEY);
-  if (savedPass === PASSCODE) {
+  const savedPass = localStorage.getItem("app_auth_passcode");
+  if (savedPass === sitePasscode) {
     unlockApp();
   } else {
     $("authSection").classList.remove("hidden");
@@ -326,8 +483,8 @@ function unlockApp() {
 
 function checkPassword() {
   const inputVal = $("passInput").value;
-  if (inputVal === PASSCODE) {
-    localStorage.setItem(AUTH_KEY, PASSCODE);
+  if (inputVal === sitePasscode) {
+    localStorage.setItem("app_auth_passcode", sitePasscode);
     unlockApp();
   } else {
     $("authError").textContent = "パスワードが違います。";
@@ -503,9 +660,10 @@ function finish() {
     wrongQueue.forEach(w => {
       const item = document.createElement("div");
       item.className = "wrong-item";
+      const posHtml = showPos ? ` <span style="font-size:11px;color:#888;">(${w.pos})</span>` : "";
       item.innerHTML = `
         <div class="en">${w.en}</div>
-        <div class="jp-pos">${w.jp} <span style="font-size:11px;color:#888;">(${w.pos})</span></div>
+        <div class="jp-pos">${w.jp}${posHtml}</div>
       `;
       wrongListItems.appendChild(item);
     });
@@ -710,6 +868,896 @@ document.addEventListener("DOMContentLoaded", () => {
   $("loginBtn").addEventListener("click", checkPassword);
   $("passInput").addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.keyCode === 13) checkPassword();
+  });
+
+  $("adminPassInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.keyCode === 13) checkAdminPassword();
+  });
+
+  $("check").addEventListener("click", judge);
+  $("answer").addEventListener("click", reveal);
+  
+  $("input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.keyCode === 13) judge();
+  });
+});
+</script>
+</body>
+</html>
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>一問一答</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f4f6;color:#111;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+main{width:min(100%,600px);margin:auto;padding:18px 14px 35px}
+h1{font-size:23px;margin:4px 0 16px;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none;}
+
+/* タブナビゲーション */
+.tab-nav{display:flex;background:#e5e7eb;padding:4px;border-radius:14px;margin-bottom:16px}
+.tab-btn{flex:1;height:42px;border:0;background:transparent;border-radius:10px;font-size:15px;font-weight:600;color:#666;cursor:pointer;transition:.2s}
+.tab-btn.active{background:#fff;color:#111;box-shadow:0 2px 6px #00000012}
+
+.card{background:#fff;border-radius:18px;padding:20px 17px;box-shadow:0 2px 12px #00000012;margin-bottom:15px}
+.top{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:8px}
+.track{height:7px;background:#e5e7eb;border-radius:9px;overflow:hidden;margin-bottom:24px}
+.fill{height:100%;width:0;background:#111;transition:.2s}
+.question{text-align:center;min-height:145px;display:flex;flex-direction:column;justify-content:center}
+.jp{font-size:32px;font-weight:700;line-height:1.35}
+.pos{display:inline-block;margin:10px auto 0;padding:5px 10px;border-radius:8px;background:#eee;color:#555;font-size:14px}
+input[type="text"], input[type="password"], textarea, select{display:block;width:100%;border:2px solid #ddd;border-radius:12px;padding:10px 14px;font-size:16px;outline:0}
+input[type="text"], input[type="password"]{height:46px;font-size:16px}
+input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus{border-color:#555}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.buttons.single{grid-template-columns:1fr}
+button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.primary{background:#111;color:#fff}
+.secondary{background:#e9eaec;color:#111}
+.feedback{min-height:58px;margin-top:12px;padding:12px;border-radius:11px;font-size:15px;line-height:1.5}
+.good{background:#e9f7ec}
+.bad{background:#fff0f0}
+.answer{font-size:21px;font-weight:700}
+.stats{display:flex;justify-content:space-between;margin-top:12px;color:#777;font-size:13px}
+.result{text-align:center;padding:24px 18px}
+.score{font-size:40px;font-weight:800;margin:10px 0}
+.hidden{display:none !important}
+
+/* パスワード保護用 */
+.auth-card{text-align:center;padding:30px 20px}
+.auth-title{font-size:20px;font-weight:700;margin-bottom:10px}
+.auth-desc{font-size:14px;color:#666;margin-bottom:20px}
+.auth-error{color:#ef4444;font-size:13px;margin-top:10px;min-height:20px}
+
+/* モード切替・設定エリア */
+.setting-row{display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#444;font-weight:bold;padding:6px 0}
+.setting-row select{width:auto;height:40px;padding:0 10px;font-size:14px}
+
+/* トグルスイッチのスタイル */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .3s;
+  border-radius: 28px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+input:checked + .slider {
+  background-color: #111;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+/* 写真別データ管理エリア */
+.manage-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.image-list{display:flex;flex-direction:column;gap:10px}
+.image-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.image-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff}
+.image-info{display:flex;flex-direction:column;gap:2px;overflow:hidden;padding-right:8px;cursor:pointer}
+.image-name{font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.image-meta{font-size:12px;color:#666}
+.action-btns{display:flex;gap:6px;align-items:center}
+.btn-del{height:34px;padding:0 12px;background:#ef4444;color:#fff;font-size:13px;border-radius:8px;flex-shrink:0;border:0;cursor:pointer}
+.btn-toggle{height:34px;padding:0 10px;background:#e5e7eb;color:#333;font-size:13px;border-radius:8px;border:0;cursor:pointer}
+
+/* 単語編集テーブル */
+.word-edit-list{padding:10px 12px;border-top:1px solid #e5e7eb;background:#fff;display:flex;flex-direction:column;gap:10px}
+.edit-row{display:grid;grid-template-columns:1fr 1fr 100px 60px 36px;gap:6px;align-items:center}
+.edit-input{height:38px !important;font-size:14px !important;border-radius:8px !important;padding:0 8px !important}
+.edit-select{height:38px !important;font-size:13px !important;border-radius:8px !important;padding:0 4px !important;background:#fff}
+.btn-icon-del{height:38px;width:36px;background:#fee2e2;color:#ef4444;border:0;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
+.move-btns{display:flex;gap:2px}
+.btn-arrow{height:38px;width:28px;background:#f3f4f6;color:#444;border:1px solid #d1d5db;border-radius:6px;font-size:12px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}
+.btn-arrow:disabled{opacity:0.3;cursor:not-allowed}
+.empty-msg{font-size:14px;color:#888;text-align:center;padding:25px 0}
+
+/* 貼り付けエリア */
+.paste-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:15px}
+.paste-box label{font-size:13px;font-weight:bold;color:#444;display:block;margin-bottom:6px}
+
+/* 間違えた問題一覧スタイリング */
+.wrong-list-box{margin:18px 0;text-align:left;background:#f9fafb;border:1px solid #fee2e2;border-radius:12px;padding:12px 14px;max-height:260px;overflow-y:auto}
+.wrong-list-title{font-size:14px;font-weight:bold;color:#dc2626;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.wrong-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:14px}
+.wrong-item:last-child{border-bottom:0}
+.wrong-item .en{font-weight:bold;color:#111}
+.wrong-item .jp-pos{color:#666;font-size:13px;text-align:right}
+
+/* モーダル表示エリア */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999;padding:15px}
+.modal-content{background:#fff;border-radius:18px;padding:24px 20px;width:min(100%,420px);box-shadow:0 10px 25px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
+.form-group{margin-bottom:12px;text-align:left;}
+.form-group label{font-size:12px;font-weight:bold;color:#555;display:block;margin-bottom:4px;}
+
+@media(max-width:500px){
+  .edit-row{grid-template-columns:1fr 1fr;row-gap:6px}
+  .edit-row .edit-select{grid-column:span 1}
+  .edit-row .move-btns{grid-column:span 1;justify-content:flex-end}
+  .edit-row .btn-icon-del{grid-column:span 1;width:100%}
+}
+@media(max-width:380px){.jp{font-size:28px}main{padding-left:10px;padding-right:10px}.card{padding:17px 14px}}
+</style>
+</head>
+<body>
+<main>
+<!-- 5回クリックで管理者メニューが開くタイトル -->
+<h1 id="appTitle" onclick="handleTitleClick()">一問一答</h1>
+
+<!-- ロック画面（パスワード入力画面） -->
+<section class="card auth-card" id="authSection">
+  <div class="auth-title">パスワード保護</div>
+  <div class="auth-desc">利用するにはパスワードを入力してください。</div>
+  <input type="password" id="passInput" placeholder="パスワードを入力" style="margin-bottom: 12px; text-align: center; height:54px; font-size:20px;">
+  <button type="button" class="primary" id="loginBtn" style="width: 100%;">解除して始める</button>
+  <div class="auth-error" id="authError"></div>
+</section>
+
+<!-- メインコンテンツ（解除成功後に表示） -->
+<div id="mainContent" class="hidden">
+  
+  <!-- 画面切り替えタブ -->
+  <nav class="tab-nav">
+    <button type="button" class="tab-btn active" id="tabQuizBtn" onclick="switchPage('quizPage')">クイズ</button>
+    <button type="button" class="tab-btn" id="tabManageBtn" onclick="switchPage('managePage')">データ管理</button>
+  </nav>
+
+  <!-- ページ1: クイズ画面 -->
+  <div id="quizPage">
+    <!-- 未登録時の案内表示 -->
+    <section class="card hidden" id="noWordsMsg">
+      <div class="empty-msg">
+        単語データがまだ登録されていません。<br>
+        上部の「データ管理」タブから単語を追加してください。
+      </div>
+      <button type="button" class="primary" onclick="switchPage('managePage')" style="width:100%;margin-top:10px;">データ管理を開く</button>
+    </section>
+
+    <section class="card" id="quiz">
+      <div class="top"><span id="count">0 / 0</span><span id="score">正解 0</span></div>
+      <div class="track"><div class="fill" id="fill"></div></div>
+
+      <div class="question">
+        <div class="jp" id="jp">-</div>
+        <div class="pos" id="pos">-</div>
+      </div>
+
+      <input id="input" type="text" inputmode="latin" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="英単語を入力" style="height:54px; font-size:20px;">
+
+      <div class="buttons" id="btnContainer">
+        <button type="button" class="primary" id="check">答え合わせ</button>
+        <button type="button" class="secondary" id="answer">答えを見る</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+      <div class="stats"><span id="ok">正解 0</span><span id="ng">不正解 0</span></div>
+    </section>
+
+    <!-- 結果表示画面 -->
+    <section class="card result hidden" id="result">
+      <div>テスト結果</div>
+      <div class="score" id="finalScore"></div>
+      <div id="rate"></div>
+
+      <!-- 間違えた問題一覧エリア -->
+      <div id="wrongListBox" class="wrong-list-box hidden">
+        <div class="wrong-list-title">
+          <span>間違えた問題</span>
+          <span id="wrongListCount">0問</span>
+        </div>
+        <div id="wrongListItems"></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:15px;">
+        <button type="button" class="primary" id="retryWrongBtn" onclick="startRetryWrong()">間違えた問題だけで再挑戦</button>
+        <button type="button" class="secondary" id="again" onclick="start()">すべての問題から再スタート</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ページ2: データ管理画面 -->
+  <div id="managePage" class="hidden">
+    <!-- 出題・表示設定エリア -->
+    <section class="card" style="padding: 14px 17px; margin-bottom: 15px;">
+      <div class="setting-row">
+        <span>出題順序の設定:</span>
+        <select id="orderSelect" onchange="start()">
+          <option value="sequential">リスト順</option>
+          <option value="random">ランダムに出題</option>
+        </select>
+      </div>
+      <hr style="border:0;border-top:1px solid #eee;margin:10px 0;">
+      <div class="setting-row">
+        <span>クイズの品詞表示:</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="posToggleCheckbox" onchange="togglePosVisibility()">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- 単語編集・追加エリア -->
+    <section class="card">
+      <div class="manage-title">
+        <span>登録データ一覧</span>
+        <span id="totalWordCount" style="font-size:13px;font-weight:normal;color:#666;">計 0 単語</span>
+      </div>
+
+      <!-- AIのコード貼り付け用エリア -->
+      <div class="paste-box">
+        <label>AIが出力したコードを貼り付け</label>
+        <input type="text" id="groupNameInput" placeholder="画像名やグループ名（例: ノート1枚目）" style="height:38px;font-size:14px;margin-bottom:8px;">
+        <textarea id="pasteInput" rows="3" placeholder="ここにコードを貼り付け"></textarea>
+        <button type="button" class="primary" onclick="importFromGemini()" style="width:100%;height:40px;margin-top:8px;font-size:14px;">コードから追加する</button>
+        <div id="importError" style="color:#ef4444;font-size:12px;margin-top:4px;"></div>
+      </div>
+
+      <div id="imageList" class="image-list"></div>
+      <button type="button" class="secondary" onclick="addNewWord()" style="width:100%;margin-top:12px;">＋ 手動で追加する</button>
+    </section>
+  </div>
+
+</div>
+</main>
+
+<!-- 管理者認証モーダル -->
+<div id="adminAuthModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="auth-title">管理者認証</div>
+    <div class="auth-desc">管理者パスワードを入力してください。</div>
+    <input type="password" id="adminPassInput" placeholder="管理者パスワード" style="margin-bottom:12px;text-align:center;">
+    <div style="display:flex;gap:8px;">
+      <button type="button" class="secondary" onclick="closeAdminAuthModal()" style="flex:1;">キャンセル</button>
+      <button type="button" class="primary" onclick="checkAdminPassword()" style="flex:1;">ログイン</button>
+    </div>
+    <div class="auth-error" id="adminAuthError"></div>
+  </div>
+</div>
+
+<!-- 管理者設定画面モーダル -->
+<div id="adminPanelModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="auth-title" style="margin-bottom:15px;">サイトパスワードの変更</div>
+    
+    <div class="form-group">
+      <label>① 現行のサイトパスワード</label>
+      <input type="password" id="currentSitePassInput" placeholder="現在の利用用パスワード">
+    </div>
+
+    <div class="form-group">
+      <label>② 管理者パスワード</label>
+      <input type="password" id="adminVerifyPassInput" placeholder="管理者パスワード（0530）">
+    </div>
+
+    <div class="form-group">
+      <label>③ 新しいサイトパスワード（1回目）</label>
+      <input type="password" id="newSitePassInput1" placeholder="新しいパスワード">
+    </div>
+
+    <div class="form-group">
+      <label>④ 新しいサイトパスワード（2回目・確認）</label>
+      <input type="password" id="newSitePassInput2" placeholder="新しいパスワード（再入力）">
+    </div>
+
+    <div id="adminMsg" style="font-size:13px;margin:10px 0;text-align:center;min-height:18px;"></div>
+
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button type="button" class="secondary" onclick="closeAdminPanelModal()" style="flex:1;">閉じる</button>
+      <button type="button" class="primary" onclick="saveNewSitePassword()" style="flex:1;">変更を保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 設定保持キー
+const DEFAULT_SITE_PASS = "1902";
+const ADMIN_PASS = "0530";
+
+const STORAGE_SITE_PASS_KEY = "eiken_app_site_passcode";
+const STORAGE_GROUPS_KEY = "eiken_app_groups";
+const STORAGE_WORDS_KEY = "eiken_app_words";
+const STORAGE_POS_SHOW_KEY = "eiken_app_show_pos";
+
+// パスワードなどのデータ読み込み
+let sitePasscode = localStorage.getItem(STORAGE_SITE_PASS_KEY) || DEFAULT_SITE_PASS;
+let groups = JSON.parse(localStorage.getItem(STORAGE_GROUPS_KEY)) || [];
+let words = JSON.parse(localStorage.getItem(STORAGE_WORDS_KEY)) || [];
+let showPos = localStorage.getItem(STORAGE_POS_SHOW_KEY) !== "false";
+
+function saveData() {
+  localStorage.setItem(STORAGE_GROUPS_KEY, JSON.stringify(groups));
+  localStorage.setItem(STORAGE_WORDS_KEY, JSON.stringify(words));
+  localStorage.setItem(STORAGE_POS_SHOW_KEY, showPos);
+  localStorage.setItem(STORAGE_SITE_PASS_KEY, sitePasscode);
+}
+
+let q = [], i = 0, ok = 0, ng = 0, done = false;
+let wrongQueue = [];
+const $ = id => document.getElementById(id);
+
+// 連続クリックカウンター
+let titleClickCount = 0;
+let titleClickTimer = null;
+
+function handleTitleClick() {
+  titleClickCount++;
+  clearTimeout(titleClickTimer);
+  
+  if (titleClickCount >= 5) {
+    titleClickCount = 0;
+    openAdminAuthModal();
+  } else {
+    titleClickTimer = setTimeout(() => {
+      titleClickCount = 0;
+    }, 2000); // 2秒以内に5回タップ
+  }
+}
+
+function openAdminAuthModal() {
+  $("adminAuthError").textContent = "";
+  $("adminPassInput").value = "";
+  $("adminAuthModal").classList.remove("hidden");
+  $("adminPassInput").focus();
+}
+
+function closeAdminAuthModal() {
+  $("adminAuthModal").classList.add("hidden");
+}
+
+function checkAdminPassword() {
+  const inputVal = $("adminPassInput").value;
+  if (inputVal === ADMIN_PASS) {
+    closeAdminAuthModal();
+    openAdminPanelModal();
+  } else {
+    $("adminAuthError").textContent = "パスワードが正しくありません。";
+    $("adminPassInput").value = "";
+    $("adminPassInput").focus();
+  }
+}
+
+function openAdminPanelModal() {
+  $("adminMsg").textContent = "";
+  $("currentSitePassInput").value = "";
+  $("adminVerifyPassInput").value = "";
+  $("newSitePassInput1").value = "";
+  $("newSitePassInput2").value = "";
+  $("adminPanelModal").classList.remove("hidden");
+}
+
+function closeAdminPanelModal() {
+  $("adminPanelModal").classList.add("hidden");
+}
+
+function saveNewSitePassword() {
+  const curPass = $("currentSitePassInput").value;
+  const adminPass = $("adminVerifyPassInput").value;
+  const newPass1 = $("newSitePassInput1").value;
+  const newPass2 = $("newSitePassInput2").value;
+
+  $("adminMsg").style.color = "#ef4444";
+
+  // 入力チェック
+  if (!curPass || !adminPass || !newPass1 || !newPass2) {
+    $("adminMsg").textContent = "すべての項目を入力してください。";
+    return;
+  }
+
+  // 現行サイトパスワードの確認
+  if (curPass !== sitePasscode) {
+    $("adminMsg").textContent = "現行のサイトパスワードが違います。";
+    return;
+  }
+
+  // 管理者パスワードの確認
+  if (adminPass !== ADMIN_PASS) {
+    $("adminMsg").textContent = "管理者パスワードが違います。";
+    return;
+  }
+
+  // 新しいパスワードの一致判定
+  if (newPass1 !== newPass2) {
+    $("adminMsg").textContent = "新しいパスワードが一致しません。";
+    return;
+  }
+
+  // 成功時処理
+  sitePasscode = newPass1;
+  saveData();
+
+  $("adminMsg").style.color = "#16a34a";
+  $("adminMsg").textContent = "パスワードを更新・保存しました！";
+
+  setTimeout(() => {
+    closeAdminPanelModal();
+  }, 1200);
+}
+
+function shuffle(a) { return a.slice().sort(() => Math.random() - .5); }
+
+// 大文字・小文字を無視し、全角文字の半角化および前後空白の除去を行う正規化関数
+function norm(s) {
+  if (!s) return "";
+  return s
+    .trim()
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(ch) {
+      return String.fromCharCode(ch.charCodeAt(0) - 0xfee0);
+    })
+    .toLowerCase();
+}
+
+function normalizePos(rawPos) {
+  if (!rawPos) return "名詞 (n.)";
+  const p = rawPos.toString().toLowerCase();
+  
+  if (p.includes("動詞") || p.includes("v.") || p.includes("verb") || p === "v") {
+    return "動詞 (v.)";
+  }
+  if (p.includes("形容詞") || p.includes("a.") || p.includes("adj") || p === "a") {
+    return "形容詞 (a.)";
+  }
+  if (p.includes("副詞") || p.includes("ad.") || p.includes("adv") || p === "ad") {
+    return "副詞 (ad.)";
+  }
+  if (p.includes("名詞") || p.includes("n.") || p.includes("noun") || p === "n") {
+    return "名詞 (n.)";
+  }
+  return "名詞 (n.)";
+}
+
+function initAuth() {
+  const savedPass = localStorage.getItem("app_auth_passcode");
+  if (savedPass === sitePasscode) {
+    unlockApp();
+  } else {
+    $("authSection").classList.remove("hidden");
+    $("mainContent").classList.add("hidden");
+  }
+}
+
+function unlockApp() {
+  $("authSection").classList.add("hidden");
+  $("mainContent").classList.remove("hidden");
+  updatePosToggleUI();
+  start();
+}
+
+function checkPassword() {
+  const inputVal = $("passInput").value;
+  if (inputVal === sitePasscode) {
+    localStorage.setItem("app_auth_passcode", sitePasscode);
+    unlockApp();
+  } else {
+    $("authError").textContent = "パスワードが違います。";
+    $("passInput").value = "";
+    $("passInput").focus();
+  }
+}
+
+function togglePosVisibility() {
+  showPos = $("posToggleCheckbox").checked;
+  saveData();
+  if (q.length > 0 && q[i]) {
+    $("pos").style.display = showPos ? "inline-block" : "none";
+  }
+}
+
+function updatePosToggleUI() {
+  $("posToggleCheckbox").checked = showPos;
+}
+
+function switchPage(pageId) {
+  if (pageId === 'quizPage') {
+    $("quizPage").classList.remove("hidden");
+    $("managePage").classList.add("hidden");
+    $("tabQuizBtn").classList.add("active");
+    $("tabManageBtn").classList.remove("active");
+  } else {
+    $("quizPage").classList.add("hidden");
+    $("managePage").classList.remove("hidden");
+    $("tabQuizBtn").classList.remove("active");
+    $("tabManageBtn").classList.add("active");
+    updateManageUI();
+  }
+}
+
+function start() {
+  const validWords = words.filter(w => w.en.trim() !== "" || w.jp.trim() !== "");
+
+  if (validWords.length === 0) {
+    $("quiz").classList.add("hidden");
+    $("result").classList.add("hidden");
+    $("noWordsMsg").classList.remove("hidden");
+    updateManageUI();
+    return;
+  }
+
+  $("noWordsMsg").classList.add("hidden");
+
+  const orderMode = $("orderSelect").value;
+  if (orderMode === "random") {
+    q = shuffle(validWords);
+  } else {
+    q = validWords.slice();
+  }
+
+  wrongQueue = [];
+  i = 0; ok = 0; ng = 0;
+  $("quiz").classList.remove("hidden");
+  $("result").classList.add("hidden");
+  show();
+  updateManageUI();
+}
+
+function startRetryWrong() {
+  if (wrongQueue.length === 0) return;
+  
+  const orderMode = $("orderSelect").value;
+  if (orderMode === "random") {
+    q = shuffle(wrongQueue);
+  } else {
+    q = wrongQueue.slice();
+  }
+
+  wrongQueue = [];
+  i = 0; ok = 0; ng = 0;
+  $("quiz").classList.remove("hidden");
+  $("result").classList.add("hidden");
+  show();
+}
+
+function show() {
+  done = false;
+  const w = q[i];
+  $("count").textContent = (i + 1) + " / " + q.length;
+  $("fill").style.width = (i / q.length * 100) + "%";
+  $("jp").textContent = w.jp || "（未設定）";
+  $("pos").textContent = w.pos || "名詞 (n.)";
+  $("pos").style.display = showPos ? "inline-block" : "none";
+  
+  $("input").value = "";
+  $("input").disabled = false;
+  $("feedback").className = "feedback";
+  $("feedback").innerHTML = "";
+
+  // ボタン状態の初期化
+  $("btnContainer").classList.remove("single");
+  $("check").textContent = "答え合わせ";
+  $("answer").classList.remove("hidden");
+
+  $("input").focus();
+  $("ok").textContent = "正解 " + ok;
+  $("ng").textContent = "不正解 " + ng;
+  $("score").textContent = "正解 " + ok;
+}
+
+function next() {
+  i++;
+  if (i >= q.length) finish();
+  else show();
+}
+
+function setNextState() {
+  done = true;
+  $("input").disabled = true;
+  $("btnContainer").classList.add("single");
+  $("check").textContent = "次の問題";
+  $("answer").classList.add("hidden");
+  $("ok").textContent = "正解 " + ok;
+  $("ng").textContent = "不正解 " + ng;
+  $("score").textContent = "正解 " + ok;
+}
+
+function judge() {
+  if (done) { next(); return; }
+  const val = $("input").value;
+  if (!val.trim()) {
+    $("feedback").className = "feedback bad";
+    $("feedback").innerHTML = "単語を入力してください。";
+    return;
+  }
+  
+  // 大文字小文字の違いを無視して正誤判定
+  const right = norm(val) === norm(q[i].en);
+  
+  if (right) {
+    ok++;
+    $("feedback").className = "feedback good";
+    $("feedback").innerHTML = "正解！<br><span class='answer'>" + q[i].en + "</span>";
+  } else {
+    ng++;
+    wrongQueue.push(q[i]);
+    $("feedback").className = "feedback bad";
+    $("feedback").innerHTML = "不正解。正解は<br><span class='answer'>" + q[i].en + "</span>";
+  }
+  setNextState();
+}
+
+function reveal() {
+  if (done) { next(); return; }
+  ng++;
+  wrongQueue.push(q[i]);
+  $("feedback").className = "feedback bad";
+  $("feedback").innerHTML = "正解：<span class='answer'>" + q[i].en + "</span>";
+  setNextState();
+}
+
+function finish() {
+  $("fill").style.width = "100%";
+  $("quiz").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("finalScore").textContent = ok + " / " + q.length;
+  $("rate").textContent = "正答率 " + Math.round(ok / q.length * 100) + "%";
+
+  const retryBtn = $("retryWrongBtn");
+  const wrongBox = $("wrongListBox");
+  const wrongListItems = $("wrongListItems");
+
+  if (wrongQueue.length > 0) {
+    wrongBox.classList.remove("hidden");
+    $("wrongListCount").textContent = wrongQueue.length + "問";
+    wrongListItems.innerHTML = "";
+    
+    wrongQueue.forEach(w => {
+      const item = document.createElement("div");
+      item.className = "wrong-item";
+      const posHtml = showPos ? ` <span style="font-size:11px;color:#888;">(${w.pos})</span>` : "";
+      item.innerHTML = `
+        <div class="en">${w.en}</div>
+        <div class="jp-pos">${w.jp}${posHtml}</div>
+      `;
+      wrongListItems.appendChild(item);
+    });
+
+    retryBtn.classList.remove("hidden");
+    retryBtn.textContent = `間違えた問題 (${wrongQueue.length}問) で再挑戦`;
+  } else {
+    wrongBox.classList.add("hidden");
+    wrongListItems.innerHTML = "";
+    retryBtn.classList.add("hidden");
+    $("rate").innerHTML += "<br><br><span style='color:#16a34a;font-weight:bold;font-size:18px;'>全問正解！おめでとうございます！</span>";
+  }
+}
+
+function deleteSingleWord(wordId) {
+  words = words.filter(w => w.id !== wordId);
+  saveData();
+  start();
+}
+
+function deleteGroup(groupId) {
+  if (confirm("この画像に登録されているすべての単語を削除しますか？")) {
+    words = words.filter(w => w.groupId !== groupId);
+    groups = groups.filter(g => g.id !== groupId);
+    saveData();
+    start();
+  }
+}
+
+function toggleAccordion(groupId) {
+  const g = groups.find(item => item.id === groupId);
+  if (g) {
+    g.open = !g.open;
+    saveData();
+    updateManageUI();
+  }
+}
+
+function updateWordField(wordId, field, value) {
+  const w = words.find(item => item.id === wordId);
+  if (w) {
+    w[field] = (field === 'pos') ? normalizePos(value) : value.trim();
+    saveData();
+    if (q[i] && q[i].id === wordId) {
+      if (field === 'jp') $("jp").textContent = w.jp;
+      if (field === 'pos') $("pos").textContent = w.pos;
+    }
+  }
+}
+
+function moveWord(wordId, direction) {
+  const index = words.findIndex(w => w.id === wordId);
+  if (index === -1) return;
+
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= words.length) return;
+
+  const temp = words[index];
+  words[index] = words[targetIndex];
+  words[targetIndex] = temp;
+
+  saveData();
+  start();
+}
+
+function addNewWord() {
+  let targetGroup = groups[groups.length - 1];
+  if (!targetGroup) {
+    targetGroup = { id: "g_" + Date.now(), name: "手動追加データ", open: true };
+    groups.push(targetGroup);
+  } else {
+    targetGroup.open = true;
+  }
+
+  const newId = "w_" + Date.now();
+  words.push({
+    id: newId,
+    groupId: targetGroup.id,
+    en: "",
+    pos: "名詞 (n.)",
+    jp: ""
+  });
+  saveData();
+  updateManageUI();
+}
+
+function importFromGemini() {
+  const text = $("pasteInput").value.trim();
+  let groupName = $("groupNameInput").value.trim();
+  $("importError").textContent = "";
+  
+  if (!text) return;
+  if (!groupName) groupName = "画像 " + (groups.length + 1);
+
+  try {
+    const parsed = new Function(`return ${text}`)();
+    if (Array.isArray(parsed)) {
+      const newGroupId = "g_" + Date.now();
+      
+      groups.push({
+        id: newGroupId,
+        name: groupName,
+        open: true
+      });
+
+      const newItems = parsed.map((item, idx) => ({
+        id: "w_g_" + Date.now() + "_" + idx,
+        groupId: newGroupId,
+        en: item.en || "",
+        pos: normalizePos(item.pos),
+        jp: item.jp || ""
+      }));
+
+      words = words.concat(newItems);
+      saveData();
+      
+      $("pasteInput").value = "";
+      $("groupNameInput").value = "";
+      start();
+    } else {
+      $("importError").textContent = "配列フォーマット形式で貼り付けてください。";
+    }
+  } catch (err) {
+    $("importError").textContent = "コードの解析に失敗しました。フォーマットを確認してください。";
+  }
+}
+
+function updateManageUI() {
+  const validWordCount = words.filter(w => w.en.trim() !== "" || w.jp.trim() !== "").length;
+  $("totalWordCount").textContent = `計 ${validWordCount} 単語`;
+  const listEl = $("imageList");
+  listEl.innerHTML = "";
+
+  if (groups.length === 0) {
+    listEl.innerHTML = `<div class="empty-msg">登録されている画像データはありません</div>`;
+    return;
+  }
+
+  groups.forEach(g => {
+    const groupWords = words.filter(w => w.groupId === g.id);
+    const card = document.createElement("div");
+    card.className = "image-card";
+
+    const header = document.createElement("div");
+    header.className = "image-header";
+    header.innerHTML = `
+      <div class="image-info" onclick="toggleAccordion('${g.id}')">
+        <div class="image-name">${g.name}</div>
+        <div class="image-meta">${groupWords.length} 単語</div>
+      </div>
+      <div class="action-btns">
+        <button type="button" class="btn-toggle" onclick="toggleAccordion('${g.id}')">${g.open ? '閉じる' : '編集'}</button>
+        <button type="button" class="btn-del" onclick="deleteGroup('${g.id}')">削除</button>
+      </div>
+    `;
+    card.appendChild(header);
+
+    if (g.open) {
+      const editList = document.createElement("div");
+      editList.className = "word-edit-list";
+
+      if (groupWords.length === 0) {
+        editList.innerHTML = `<div class="empty-msg">この画像に単語はありません</div>`;
+      } else {
+        groupWords.forEach((w) => {
+          const globalIdx = words.findIndex(item => item.id === w.id);
+          const isFirst = globalIdx === 0;
+          const isLast = globalIdx === words.length - 1;
+
+          const currentPos = normalizePos(w.pos);
+
+          const row = document.createElement("div");
+          row.className = "edit-row";
+          row.innerHTML = `
+            <input type="text" class="edit-input" value="${w.en}" placeholder="英単語" onchange="updateWordField('${w.id}', 'en', this.value)">
+            <input type="text" class="edit-input" value="${w.jp}" placeholder="日本語" onchange="updateWordField('${w.id}', 'jp', this.value)">
+            <select class="edit-select" onchange="updateWordField('${w.id}', 'pos', this.value)">
+              <option value="名詞 (n.)" ${currentPos === '名詞 (n.)' ? 'selected' : ''}>名詞 (n.)</option>
+              <option value="動詞 (v.)" ${currentPos === '動詞 (v.)' ? 'selected' : ''}>動詞 (v.)</option>
+              <option value="形容詞 (a.)" ${currentPos === '形容詞 (a.)' ? 'selected' : ''}>形容詞 (a.)</option>
+              <option value="副詞 (ad.)" ${currentPos === '副詞 (ad.)' ? 'selected' : ''}>副詞 (ad.)</option>
+            </select>
+            <div class="move-btns">
+              <button type="button" class="btn-arrow" ${isFirst ? 'disabled' : ''} onclick="moveWord('${w.id}', -1)">▲</button>
+              <button type="button" class="btn-arrow" ${isLast ? 'disabled' : ''} onclick="moveWord('${w.id}', 1)">▼</button>
+            </div>
+            <button type="button" class="btn-icon-del" title="削除" onclick="deleteSingleWord('${w.id}')">✕</button>
+          `;
+          editList.appendChild(row);
+        });
+      }
+      card.appendChild(editList);
+    }
+
+    listEl.appendChild(card);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initAuth();
+
+  $("loginBtn").addEventListener("click", checkPassword);
+  $("passInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.keyCode === 13) checkPassword();
+  });
+
+  $("adminPassInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.keyCode === 13) checkAdminPassword();
   });
 
   $("check").addEventListener("click", judge);
