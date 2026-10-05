@@ -15,8 +15,8 @@ h1{font-size:23px;margin:4px 0 16px;text-align:center;cursor:pointer;user-select
 .tab-btn{flex:1;height:42px;border:0;background:transparent;border-radius:10px;font-size:15px;font-weight:600;color:#666;cursor:pointer;transition:.2s}
 .tab-btn.active{background:#fff;color:#111;box-shadow:0 2px 6px #00000012}
 
-.card{background:#fff;border-radius:18px;padding:20px 17px;box-shadow:0 2px 12px #00000012;margin-bottom:15px}
-.top{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:8px}
+.card{position:relative;background:#fff;border-radius:18px;padding:20px 17px;box-shadow:0 2px 12px #00000012;margin-bottom:15px}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#666;margin-bottom:8px;padding-right:30px;}
 .track{height:7px;background:#e5e7eb;border-radius:9px;overflow:hidden;margin-bottom:24px}
 .fill{height:100%;width:0;background:#111;transition:.2s}
 .question{text-align:center;min-height:145px;display:flex;flex-direction:column;justify-content:center}
@@ -39,39 +39,42 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 .score{font-size:40px;font-weight:800;margin:10px 0}
 .hidden{display:none !important}
 
-/* パスワード入力コンテナ（トグル機能用） */
-.password-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-.password-wrapper input {
-  padding-right: 48px !important;
-}
-.toggle-password-btn {
+/* 歯車ボタンアイコン & 回転アニメーション */
+.gear-btn {
   position: absolute;
-  right: 6px;
+  top: 16px;
+  right: 16px;
   background: transparent;
   border: 0;
-  height: 40px;
-  width: 40px;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #444;
-  border-radius: 8px;
+  color: #555;
+  border-radius: 50%;
   padding: 0;
+  transition: transform 0.3s ease; /* 滑らかな回転効果 */
+  z-index: 1060; /* 設定画面より前面に表示 */
 }
-.toggle-password-btn:hover {
-  background: #f0f0f0;
+.gear-btn:hover { background: #f0f0f0; }
+.gear-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+/* 45度右回転クラス */
+.gear-btn.rotate-45 {
+  transform: rotate(45deg);
 }
-.toggle-password-btn svg {
-  width: 24px;
-  height: 24px;
-  fill: currentColor;
+
+/* パスワード入力コンテナ */
+.password-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
+.password-wrapper input { padding-right: 48px !important; }
+.toggle-password-btn {
+  position: absolute; right: 6px; background: transparent; border: 0; height: 40px; width: 40px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; color: #444; border-radius: 8px; padding: 0;
 }
+.toggle-password-btn:hover { background: #f0f0f0; }
+.toggle-password-btn svg { width: 24px; height: 24px; fill: currentColor; }
 
 /* パスワード保護用 */
 .auth-card{text-align:center;padding:30px 20px}
@@ -84,43 +87,18 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 .setting-row select{width:auto;height:40px;padding:0 10px;font-size:14px}
 
 /* トグルスイッチのスタイル */
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 28px;
-}
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+.toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
 .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ccc;
-  transition: .3s;
-  border-radius: 28px;
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc; transition: .3s; border-radius: 28px;
 }
 .slider:before {
-  position: absolute;
-  content: "";
-  height: 22px;
-  width: 22px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: .3s;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px;
+  background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-input:checked + .slider {
-  background-color: #111;
-}
-input:checked + .slider:before {
-  transform: translateX(22px);
-}
+input:checked + .slider { background-color: #111; }
+input:checked + .slider:before { transform: translateX(22px); }
 
 /* 写真別データ管理エリア */
 .manage-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
@@ -145,11 +123,11 @@ input:checked + .slider:before {
 .btn-arrow:disabled{opacity:0.3;cursor:not-allowed}
 .empty-msg{font-size:14px;color:#888;text-align:center;padding:25px 0}
 
-/* 貼り付けエリア */
+/* 貼り付け・画像インポートエリア */
 .paste-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:15px}
 .paste-box label{font-size:13px;font-weight:bold;color:#444;display:block;margin-bottom:6px}
 
-/* 間違えた問題一覧スタイリング */
+/* 間違えた問題一覧 */
 .wrong-list-box{margin:18px 0;text-align:left;background:#f9fafb;border:1px solid #fee2e2;border-radius:12px;padding:12px 14px;max-height:260px;overflow-y:auto}
 .wrong-list-title{font-size:14px;font-weight:bold;color:#dc2626;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
 .wrong-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:14px}
@@ -158,29 +136,29 @@ input:checked + .slider:before {
 .wrong-item .jp-pos{color:#666;font-size:13px;text-align:right}
 
 /* モーダル表示エリア */
-.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1050;padding:15px}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1070;padding:15px}
 .modal-content{background:#fff;border-radius:18px;padding:24px 20px;width:min(100%,480px);box-shadow:0 10px 25px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
 .form-group{margin-bottom:14px;text-align:left;}
 .form-group label{font-size:13px;font-weight:bold;color:#444;display:block;margin-bottom:6px;}
 
-/* 全画面管理者設定画面 */
+/* 全画面設定画面 UI */
 .full-screen-admin {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: #f3f4f6;
-  z-index: 1000;
+  z-index: 1050;
   overflow-y: auto;
-  padding: 20px 16px;
+  padding: 60px 16px 20px; /* 歯車ボタン用に上に余白を設定 */
 }
 .admin-container {
   max-width: 600px;
   margin: 0 auto;
 }
 .admin-header-title {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
   text-align: center;
-  margin: 10px 0 20px;
+  margin: 10px 0 16px;
   color: #111;
 }
 .admin-section-box {
@@ -206,10 +184,9 @@ input:checked + .slider:before {
 </head>
 <body>
 <main>
-<!-- 5回クリックで管理者メニューが開くタイトル -->
 <h1 id="appTitle" onclick="handleTitleClick()">一問一答</h1>
 
-<!-- ロック画面（初回/パスワード変更後に表示） -->
+<!-- ロック画面 -->
 <section class="card auth-card" id="authSection">
   <div class="auth-title">パスワード保護</div>
   <div class="auth-desc">利用するにはパスワードを入力してください。</div>
@@ -226,10 +203,9 @@ input:checked + .slider:before {
   <div class="auth-error" id="authError"></div>
 </section>
 
-<!-- メインコンテンツ（認証成功後に表示） -->
+<!-- メインコンテンツ -->
 <div id="mainContent" class="hidden">
   
-  <!-- 画面切り替えタブ -->
   <nav class="tab-nav">
     <button type="button" class="tab-btn active" id="tabQuizBtn" onclick="switchPage('quizPage')">クイズ</button>
     <button type="button" class="tab-btn" id="tabManageBtn" onclick="switchPage('managePage')">データ管理</button>
@@ -237,8 +213,10 @@ input:checked + .slider:before {
 
   <!-- ページ1: クイズ画面 -->
   <div id="quizPage">
-    <!-- 未登録時の案内表示 -->
     <section class="card hidden" id="noWordsMsg">
+      <button type="button" class="gear-btn" onclick="handleGearClick(this)" title="詳細設定">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </button>
       <div class="empty-msg">
         単語データがまだ登録されていません。<br>
         上部の「データ管理」タブから単語を追加してください。
@@ -247,6 +225,10 @@ input:checked + .slider:before {
     </section>
 
     <section class="card" id="quiz">
+      <button type="button" class="gear-btn" onclick="handleGearClick(this)" title="詳細設定">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6 3.6z"/></svg>
+      </button>
+
       <div class="top"><span id="count">0 / 0</span><span id="score">正解 0</span></div>
       <div class="track"><div class="fill" id="fill"></div></div>
 
@@ -272,7 +254,6 @@ input:checked + .slider:before {
       <div class="score" id="finalScore"></div>
       <div id="rate"></div>
 
-      <!-- 間違えた問題一覧エリア -->
       <div id="wrongListBox" class="wrong-list-box hidden">
         <div class="wrong-list-title">
           <span>間違えた問題</span>
@@ -290,7 +271,6 @@ input:checked + .slider:before {
 
   <!-- ページ2: データ管理画面 -->
   <div id="managePage" class="hidden">
-    <!-- 出題・表示設定エリア -->
     <section class="card" style="padding: 14px 17px; margin-bottom: 15px;">
       <div class="setting-row">
         <span>出題順序の設定:</span>
@@ -309,6 +289,19 @@ input:checked + .slider:before {
       </div>
     </section>
 
+    <!-- 画像から直接自動抽出するエリア -->
+    <section class="card">
+      <div class="manage-title">
+        <span>画像から単語を自動抽出</span>
+      </div>
+      <div class="paste-box" style="margin-bottom:0;">
+        <input type="text" id="aiImageGroupName" placeholder="グループ名（例: 単語帳1ページ目）" style="height:38px;font-size:14px;margin-bottom:8px;">
+        <input type="file" id="aiImageFileInput" accept="image/*" style="height: auto; padding: 6px; font-size:13px; margin-bottom:8px;">
+        <button type="button" class="primary" onclick="processImageWithGemini()" style="width:100%;height:40px;font-size:14px;">画像から読み込みを実行</button>
+        <div id="aiImageStatus" style="font-size:12px;margin-top:6px;min-height:18px;"></div>
+      </div>
+    </section>
+
     <!-- 単語編集・追加エリア -->
     <section class="card">
       <div class="manage-title">
@@ -316,12 +309,11 @@ input:checked + .slider:before {
         <span id="totalWordCount" style="font-size:13px;font-weight:normal;color:#666;">計 0 単語</span>
       </div>
 
-      <!-- AIのコード貼り付け用エリア -->
       <div class="paste-box">
-        <label>AIが出力したコードを貼り付け</label>
+        <label>AIが出力したコードを直接貼り付け</label>
         <input type="text" id="groupNameInput" placeholder="画像名やグループ名（例: ノート1枚目）" style="height:38px;font-size:14px;margin-bottom:8px;">
         <textarea id="pasteInput" rows="3" placeholder="ここにコードを貼り付け"></textarea>
-        <button type="button" class="primary" onclick="importFromGemini()" style="width:100%;height:40px;margin-top:8px;font-size:14px;">コードから追加する</button>
+        <button type="button" class="secondary" onclick="importFromGemini()" style="width:100%;height:40px;margin-top:8px;font-size:14px;">コードから追加する</button>
         <div id="importError" style="color:#ef4444;font-size:12px;margin-top:4px;"></div>
       </div>
 
@@ -333,6 +325,48 @@ input:checked + .slider:before {
 </div>
 </main>
 
+<!-- 全画面表示の詳細設定画面 -->
+<div id="detailSettingsModal" class="full-screen-admin hidden">
+  <!-- 詳細設定画面内にある固定表示の歯車ボタン -->
+  <button type="button" class="gear-btn" onclick="handleGearClick(this)" title="閉じてクイズ画面へ">
+    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6 3.6z"/></svg>
+  </button>
+
+  <div class="admin-container">
+    <div class="admin-header-title">詳細設定</div>
+
+    <nav class="tab-nav" style="margin-bottom: 20px;">
+      <button type="button" class="tab-btn active" id="tabSetGeneral" onclick="switchSettingsTab('general')">全般設定</button>
+      <button type="button" class="tab-btn" id="tabSetGemini" onclick="switchSettingsTab('gemini')">Gemini API設定</button>
+    </nav>
+
+    <div id="setTabGeneral">
+      <div class="admin-section-box">
+        <div style="font-weight:bold; font-size:15px; margin-bottom:8px;">セキュリティ設定</div>
+        <button type="button" class="primary" onclick="openPassChangeModal()" style="width:100%; height:46px; font-size:15px;">サイトパスワード変更</button>
+      </div>
+    </div>
+
+    <div id="setTabGemini" class="hidden">
+      <div class="admin-section-box">
+        <div style="font-weight:bold; font-size:15px;">Gemini API キー設定</div>
+        <div style="font-size:13px; color:#666; line-height:1.4;">
+          画像の自動解析機能を利用する場合は、ご自身のGemini APIキーを設定してください。APIキーはブラウザ内（localStorage）に安全に保存されます。
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." style="height:44px; font-size:15px;">
+        </div>
+        <button type="button" class="primary" onclick="saveGeminiApiKey()" style="width:100%; height:44px; font-size:15px;">APIキーを保存</button>
+        <div id="geminiKeyStatus" style="font-size:13px; text-align:center; min-height:18px;"></div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:20px;">
+      <button type="button" class="secondary" onclick="closeDetailSettingsModal()" style="width:100%; max-width:200px; height:44px;">設定を閉じる</button>
+    </div>
+  </div>
+</div>
+
 <!-- 管理者認証モーダル -->
 <div id="adminAuthModal" class="modal-overlay hidden">
   <div class="modal-content">
@@ -341,10 +375,7 @@ input:checked + .slider:before {
     <div class="password-wrapper" style="margin-bottom:12px;">
       <input type="password" id="adminPassInput" placeholder="管理者パスワード" style="text-align:center;">
       <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('adminPassInput', this)" title="パスワードの表示切替">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-          <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
       </button>
     </div>
     <div style="display:flex;gap:8px;">
@@ -355,106 +386,80 @@ input:checked + .slider:before {
   </div>
 </div>
 
-<!-- 全画面表示の管理者設定画面 -->
+<!-- 全画面管理者設定画面 -->
 <div id="adminPanelModal" class="full-screen-admin hidden">
   <div class="admin-container">
     <div class="admin-header-title">管理者設定</div>
-
     <div class="admin-section-box">
       <button type="button" class="primary" onclick="openPassChangeModal()" style="width:100%; height:50px; font-size:16px;">パスワード変更</button>
       <button type="button" class="primary" onclick="openAdminPassChangeModal()" style="width:100%; height:50px; font-size:16px;">管理者パスワード変更</button>
     </div>
-
     <div style="text-align:center; margin-top:20px;">
       <button type="button" class="secondary" onclick="closeAdminPanelModal()" style="width:100%; max-width:200px; height:44px;">設定画面を閉じる</button>
     </div>
   </div>
 </div>
 
-<!-- 1. サイトパスワード変更モーダル画面 -->
+<!-- 1. サイトパスワード変更モーダル -->
 <div id="passChangeModal" class="modal-overlay hidden">
   <div class="modal-content">
     <div class="auth-title" style="text-align:center; margin-bottom:15px;">サイトパスワードの変更</div>
-      
     <div class="form-group">
       <label>現在のサイトパスワード</label>
       <div class="password-wrapper">
         <input type="password" id="curSitePass" placeholder="現在のサイトパスワード">
-        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('curSitePass', this)">
-          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-        </button>
+        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('curSitePass', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
       </div>
     </div>
-
     <div class="form-group">
       <label>新しいサイトパスワード</label>
       <div class="password-wrapper">
         <input type="password" id="newSitePass1" placeholder="新しいパスワード">
-        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePass1', this)">
-          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-        </button>
+        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePass1', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
       </div>
     </div>
-
     <div class="form-group">
       <label>新しいサイトパスワード（確認）</label>
       <div class="password-wrapper">
         <input type="password" id="newSitePass2" placeholder="新しいパスワード（再入力）">
-        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePass2', this)">
-          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-        </button>
+        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePass2', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
       </div>
     </div>
-
     <button type="button" class="primary" onclick="saveSitePassword()" style="width:100%; height:44px; font-size:15px; margin-top:10px;">サイトパスワードを更新</button>
-
     <div id="passModalMsg" style="font-size:14px; margin:14px 0 6px; text-align:center; min-height:20px;"></div>
-
     <div style="margin-top:10px; text-align:center;">
       <button type="button" class="secondary" onclick="closePassChangeModal()" style="width:100%; height:42px;">閉じる</button>
     </div>
   </div>
 </div>
 
-<!-- 2. 管理者パスワード変更モーダル画面 -->
+<!-- 2. 管理者パスワード変更モーダル -->
 <div id="adminPassChangeModal" class="modal-overlay hidden">
   <div class="modal-content">
     <div class="auth-title" style="text-align:center; margin-bottom:15px;">管理者パスワード変更</div>
-
     <div class="form-group">
       <label>現在の管理者パスワード</label>
       <div class="password-wrapper">
         <input type="password" id="curAdminPass" placeholder="現在の管理者パスワード">
-        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('curAdminPass', this)">
-          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-        </button>
+        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('curAdminPass', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
       </div>
     </div>
-
     <div class="form-group">
       <label>新しい管理者パスワード</label>
       <div class="password-wrapper">
         <input type="password" id="newAdminPass1" placeholder="新しい管理者パスワード">
-        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newAdminPass1', this)">
-          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-        </button>
+        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newAdminPass1', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
       </div>
     </div>
-
     <div class="form-group">
       <label>新しい管理者パスワード（確認）</label>
       <div class="password-wrapper">
         <input type="password" id="newAdminPass2" placeholder="新しい管理者パスワード（再入力）">
-        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newAdminPass2', this)">
-          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-        </button>
+        <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newAdminPass2', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
       </div>
     </div>
-
     <button type="button" class="primary" onclick="saveAdminPassword()" style="width:100%; height:44px; font-size:15px; margin-top:10px;">管理者パスワードを更新</button>
-
     <div id="adminPassModalMsg" style="font-size:14px; margin:14px 0 6px; text-align:center; min-height:20px;"></div>
-
     <div style="margin-top:10px; text-align:center;">
       <button type="button" class="secondary" onclick="closeAdminPassChangeModal()" style="width:100%; height:42px;">閉じる</button>
     </div>
@@ -462,7 +467,6 @@ input:checked + .slider:before {
 </div>
 
 <script>
-// 設定保持キー
 const DEFAULT_SITE_PASS = "1902";
 const DEFAULT_ADMIN_PASS = "0530";
 
@@ -472,19 +476,19 @@ const STORAGE_AUTH_PASS_KEY = "app_auth_passcode";
 const STORAGE_GROUPS_KEY = "eiken_app_groups";
 const STORAGE_WORDS_KEY = "eiken_app_words";
 const STORAGE_POS_SHOW_KEY = "eiken_app_show_pos";
+const STORAGE_GEMINI_KEY = "eiken_app_gemini_api_key";
 
 const SESSION_ADMIN_AUTH_KEY = "app_admin_authenticated";
 
-// SVG アイコン定義
 const SVG_EYE_OPEN = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
 const SVG_EYE_OFF = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`;
 
-// データ読み込み
 let sitePasscode = localStorage.getItem(STORAGE_SITE_PASS_KEY) || DEFAULT_SITE_PASS;
 let adminPasscode = localStorage.getItem(STORAGE_ADMIN_PASS_KEY) || DEFAULT_ADMIN_PASS;
 let groups = JSON.parse(localStorage.getItem(STORAGE_GROUPS_KEY)) || [];
 let words = JSON.parse(localStorage.getItem(STORAGE_WORDS_KEY)) || [];
 let showPos = localStorage.getItem(STORAGE_POS_SHOW_KEY) !== "false";
+let geminiApiKey = localStorage.getItem(STORAGE_GEMINI_KEY) || "";
 
 function saveData() {
   localStorage.setItem(STORAGE_GROUPS_KEY, JSON.stringify(groups));
@@ -492,13 +496,29 @@ function saveData() {
   localStorage.setItem(STORAGE_POS_SHOW_KEY, showPos);
   localStorage.setItem(STORAGE_SITE_PASS_KEY, sitePasscode);
   localStorage.setItem(STORAGE_ADMIN_PASS_KEY, adminPasscode);
+  localStorage.setItem(STORAGE_GEMINI_KEY, geminiApiKey);
 }
 
 let q = [], i = 0, ok = 0, ng = 0, done = false;
 let wrongQueue = [];
 const $ = id => document.getElementById(id);
 
-// パスワード表示／非表示切り替え
+/* 歯車ボタンをクリックした時の処理（45度回転＋設定画面切替） */
+function handleGearClick(btnEl) {
+  btnEl.classList.add("rotate-45");
+  setTimeout(() => {
+    btnEl.classList.remove("rotate-45");
+  }, 300);
+
+  const modal = $("detailSettingsModal");
+  if (!modal.classList.contains("hidden")) {
+    closeDetailSettingsModal();
+    switchPage('quizPage');
+  } else {
+    openDetailSettingsModal();
+  }
+}
+
 function togglePassVisibility(inputId, btnEl) {
   const input = $(inputId);
   if (!input) return;
@@ -511,14 +531,12 @@ function togglePassVisibility(inputId, btnEl) {
   }
 }
 
-// 連続タップ処理（5回クリックで管理者メニュー）
 let titleClickCount = 0;
 let titleClickTimer = null;
 
 function handleTitleClick() {
   titleClickCount++;
   clearTimeout(titleClickTimer);
-  
   if (titleClickCount >= 5) {
     titleClickCount = 0;
     if (sessionStorage.getItem(SESSION_ADMIN_AUTH_KEY) === "true") {
@@ -527,13 +545,10 @@ function handleTitleClick() {
       openAdminAuthModal();
     }
   } else {
-    titleClickTimer = setTimeout(() => {
-      titleClickCount = 0;
-    }, 2000);
+    titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 2000);
   }
 }
 
-// 初期認証チェック
 function initAuth() {
   const savedPass = localStorage.getItem(STORAGE_AUTH_PASS_KEY);
   if (savedPass === sitePasscode) {
@@ -587,134 +602,99 @@ function checkAdminPassword() {
   }
 }
 
-function openAdminPanelModal() {
-  $("adminPanelModal").classList.remove("hidden");
+function openAdminPanelModal() { $("adminPanelModal").classList.remove("hidden"); }
+function closeAdminPanelModal() { $("adminPanelModal").classList.add("hidden"); }
+
+function openDetailSettingsModal() {
+  $("geminiApiKeyInput").value = geminiApiKey;
+  $("geminiKeyStatus").textContent = geminiApiKey ? "✓ APIキーが設定されています" : "未設定";
+  $("geminiKeyStatus").style.color = geminiApiKey ? "#16a34a" : "#888";
+  switchSettingsTab('general');
+  $("detailSettingsModal").classList.remove("hidden");
 }
 
-function closeAdminPanelModal() {
-  $("adminPanelModal").classList.add("hidden");
+function closeDetailSettingsModal() {
+  $("detailSettingsModal").classList.add("hidden");
 }
 
-/* --- 1. サイトパスワード変更モーダル画面制御 --- */
+function switchSettingsTab(tab) {
+  if (tab === 'general') {
+    $("setTabGeneral").classList.remove("hidden");
+    $("setTabGemini").classList.add("hidden");
+    $("tabSetGeneral").classList.add("active");
+    $("tabSetGemini").classList.remove("active");
+  } else {
+    $("setTabGeneral").classList.add("hidden");
+    $("setTabGemini").classList.remove("hidden");
+    $("tabSetGeneral").classList.remove("active");
+    $("tabSetGemini").classList.add("active");
+  }
+}
+
+function saveGeminiApiKey() {
+  const key = $("geminiApiKeyInput").value.trim();
+  geminiApiKey = key;
+  saveData();
+  $("geminiKeyStatus").textContent = key ? "✓ APIキーを保存しました" : "APIキーをクリアしました";
+  $("geminiKeyStatus").style.color = "#16a34a";
+}
+
 function openPassChangeModal() {
   $("passModalMsg").textContent = "";
-  $("curSitePass").value = "";
-  $("newSitePass1").value = "";
-  $("newSitePass2").value = "";
+  $("curSitePass").value = ""; $("newSitePass1").value = ""; $("newSitePass2").value = "";
   $("passChangeModal").classList.remove("hidden");
 }
-
-function closePassChangeModal() {
-  $("passChangeModal").classList.add("hidden");
-}
+function closePassChangeModal() { $("passChangeModal").classList.add("hidden"); }
 
 function saveSitePassword() {
-  const curPass = $("curSitePass").value;
-  const newPass1 = $("newSitePass1").value;
-  const newPass2 = $("newSitePass2").value;
-
+  const curPass = $("curSitePass").value, newPass1 = $("newSitePass1").value, newPass2 = $("newSitePass2").value;
   $("passModalMsg").style.color = "#ef4444";
-
-  if (!curPass || !newPass1 || !newPass2) {
-    $("passModalMsg").textContent = "すべての項目を入力してください。";
-    return;
-  }
-
-  if (curPass !== sitePasscode) {
-    $("passModalMsg").textContent = "現在のサイトパスワードが一致しません。";
-    return;
-  }
-
-  if (newPass1 !== newPass2) {
-    $("passModalMsg").textContent = "新しいサイトパスワードが一致しません。";
-    return;
-  }
-
+  if (!curPass || !newPass1 || !newPass2) { $("passModalMsg").textContent = "すべての項目を入力してください。"; return; }
+  if (curPass !== sitePasscode) { $("passModalMsg").textContent = "現在のサイトパスワードが一致しません。"; return; }
+  if (newPass1 !== newPass2) { $("passModalMsg").textContent = "新しいサイトパスワードが一致しません。"; return; }
   sitePasscode = newPass1;
   saveData();
   localStorage.removeItem(STORAGE_AUTH_PASS_KEY);
-
   $("passModalMsg").style.color = "#16a34a";
   $("passModalMsg").textContent = "サイトパスワードを更新しました。次回ログイン時に適用されます。";
-
-  $("curSitePass").value = "";
-  $("newSitePass1").value = "";
-  $("newSitePass2").value = "";
+  $("curSitePass").value = ""; $("newSitePass1").value = ""; $("newSitePass2").value = "";
 }
 
-/* --- 2. 管理者パスワード変更モーダル画面制御 --- */
 function openAdminPassChangeModal() {
   $("adminPassModalMsg").textContent = "";
-  $("curAdminPass").value = "";
-  $("newAdminPass1").value = "";
-  $("newAdminPass2").value = "";
+  $("curAdminPass").value = ""; $("newAdminPass1").value = ""; $("newAdminPass2").value = "";
   $("adminPassChangeModal").classList.remove("hidden");
 }
-
-function closeAdminPassChangeModal() {
-  $("adminPassChangeModal").classList.add("hidden");
-}
+function closeAdminPassChangeModal() { $("adminPassChangeModal").classList.add("hidden"); }
 
 function saveAdminPassword() {
-  const curPass = $("curAdminPass").value;
-  const newPass1 = $("newAdminPass1").value;
-  const newPass2 = $("newAdminPass2").value;
-
+  const curPass = $("curAdminPass").value, newPass1 = $("newAdminPass1").value, newPass2 = $("newAdminPass2").value;
   $("adminPassModalMsg").style.color = "#ef4444";
-
-  if (!curPass || !newPass1 || !newPass2) {
-    $("adminPassModalMsg").textContent = "すべての項目を入力してください。";
-    return;
-  }
-
-  if (curPass !== adminPasscode) {
-    $("adminPassModalMsg").textContent = "現在の管理者パスワードが一致しません。";
-    return;
-  }
-
-  if (newPass1 !== newPass2) {
-    $("adminPassModalMsg").textContent = "新しい管理者パスワードが一致しません。";
-    return;
-  }
-
+  if (!curPass || !newPass1 || !newPass2) { $("adminPassModalMsg").textContent = "すべての項目を入力してください。"; return; }
+  if (curPass !== adminPasscode) { $("adminPassModalMsg").textContent = "現在の管理者パスワードが一致しません。"; return; }
+  if (newPass1 !== newPass2) { $("adminPassModalMsg").textContent = "新しい管理者パスワードが一致しません。"; return; }
   adminPasscode = newPass1;
   saveData();
-
-  // 新しい管理者パスワードに変更されたため認証状態をリセット
   sessionStorage.removeItem(SESSION_ADMIN_AUTH_KEY);
-
   $("adminPassModalMsg").style.color = "#16a34a";
-  $("adminPassModalMsg").textContent = "管理者パスワードを変更しました！次回アクセス時に新しいパスワードが要求されます。";
-
-  $("curAdminPass").value = "";
-  $("newAdminPass1").value = "";
-  $("newAdminPass2").value = "";
+  $("adminPassModalMsg").textContent = "管理者パスワードを変更しました！";
+  $("curAdminPass").value = ""; $("newAdminPass1").value = ""; $("newAdminPass2").value = "";
 }
 
 function shuffle(a) { return a.slice().sort(() => Math.random() - .5); }
 
 function norm(s) {
   if (!s) return "";
-  return s
-    .trim()
-    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(ch) {
-      return String.fromCharCode(ch.charCodeAt(0) - 0xfee0);
-    })
-    .toLowerCase();
+  return s.trim().replace(/[Ａ-Ｚａ-ｚ０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0)).toLowerCase();
 }
 
 function normalizePos(rawPos) {
   if (!rawPos) return "";
   const p = rawPos.toString().toLowerCase();
-  
-  // 動詞の拡張判定（他動詞, vt., 自動詞, vi., 他, 自 含む）
-  if (p.includes("動詞") || p.includes("他") || p.includes("自") || p.includes("v.") || p.includes("verb") || p.includes("vt") || p.includes("vi") || p === "v") {
-    return "動詞 (v.)";
-  }
+  if (p.includes("動詞") || p.includes("他") || p.includes("自") || p.includes("v.") || p.includes("verb") || p.includes("vt") || p.includes("vi") || p === "v") return "動詞 (v.)";
   if (p.includes("形容詞") || p.includes("a.") || p.includes("adj") || p === "a") return "形容詞 (a.)";
   if (p.includes("副詞") || p.includes("ad.") || p.includes("adv") || p === "ad") return "副詞 (ad.)";
   if (p.includes("名詞") || p.includes("n.") || p.includes("noun") || p === "n") return "名詞 (n.)";
-  
   return "";
 }
 
@@ -726,9 +706,7 @@ function togglePosVisibility() {
   }
 }
 
-function updatePosToggleUI() {
-  $("posToggleCheckbox").checked = showPos;
-}
+function updatePosToggleUI() { $("posToggleCheckbox").checked = showPos; }
 
 function switchPage(pageId) {
   if (pageId === 'quizPage') {
@@ -747,7 +725,6 @@ function switchPage(pageId) {
 
 function start() {
   const validWords = words.filter(w => w.en.trim() !== "" || w.jp.trim() !== "");
-
   if (validWords.length === 0) {
     $("quiz").classList.add("hidden");
     $("result").classList.add("hidden");
@@ -755,16 +732,9 @@ function start() {
     updateManageUI();
     return;
   }
-
   $("noWordsMsg").classList.add("hidden");
-
   const orderMode = $("orderSelect").value;
-  if (orderMode === "random") {
-    q = shuffle(validWords);
-  } else {
-    q = validWords.slice();
-  }
-
+  q = (orderMode === "random") ? shuffle(validWords) : validWords.slice();
   wrongQueue = [];
   i = 0; ok = 0; ng = 0;
   $("quiz").classList.remove("hidden");
@@ -776,12 +746,7 @@ function start() {
 function startRetryWrong() {
   if (wrongQueue.length === 0) return;
   const orderMode = $("orderSelect").value;
-  if (orderMode === "random") {
-    q = shuffle(wrongQueue);
-  } else {
-    q = wrongQueue.slice();
-  }
-
+  q = (orderMode === "random") ? shuffle(wrongQueue) : wrongQueue.slice();
   wrongQueue = [];
   i = 0; ok = 0; ng = 0;
   $("quiz").classList.remove("hidden");
@@ -797,16 +762,13 @@ function show() {
   $("jp").textContent = w.jp || "（未設定）";
   $("pos").textContent = w.pos || "未設定";
   $("pos").style.display = showPos ? "inline-block" : "none";
-  
   $("input").value = "";
   $("input").disabled = false;
   $("feedback").className = "feedback";
   $("feedback").innerHTML = "";
-
   $("btnContainer").classList.remove("single");
   $("check").textContent = "答え合わせ";
   $("answer").classList.remove("hidden");
-
   $("input").focus();
   $("ok").textContent = "正解 " + ok;
   $("ng").textContent = "不正解 " + ng;
@@ -838,9 +800,7 @@ function judge() {
     $("feedback").innerHTML = "単語を入力してください。";
     return;
   }
-  
   const right = norm(val) === norm(q[i].en);
-  
   if (right) {
     ok++;
     $("feedback").className = "feedback good";
@@ -869,27 +829,18 @@ function finish() {
   $("result").classList.remove("hidden");
   $("finalScore").textContent = ok + " / " + q.length;
   $("rate").textContent = "正答率 " + Math.round(ok / q.length * 100) + "%";
-
-  const retryBtn = $("retryWrongBtn");
-  const wrongBox = $("wrongListBox");
-  const wrongListItems = $("wrongListItems");
-
+  const retryBtn = $("retryWrongBtn"), wrongBox = $("wrongListBox"), wrongListItems = $("wrongListItems");
   if (wrongQueue.length > 0) {
     wrongBox.classList.remove("hidden");
     $("wrongListCount").textContent = wrongQueue.length + "問";
     wrongListItems.innerHTML = "";
-    
     wrongQueue.forEach(w => {
       const item = document.createElement("div");
       item.className = "wrong-item";
       const posHtml = (showPos && w.pos) ? ` <span style="font-size:11px;color:#888;">(${w.pos})</span>` : "";
-      item.innerHTML = `
-        <div class="en">${w.en}</div>
-        <div class="jp-pos">${w.jp}${posHtml}</div>
-      `;
+      item.innerHTML = `<div class="en">${w.en}</div><div class="jp-pos">${w.jp}${posHtml}</div>`;
       wrongListItems.appendChild(item);
     });
-
     retryBtn.classList.remove("hidden");
     retryBtn.textContent = `間違えた問題 (${wrongQueue.length}問) で再挑戦`;
   } else {
@@ -917,11 +868,7 @@ function deleteGroup(groupId) {
 
 function toggleAccordion(groupId) {
   const g = groups.find(item => item.id === groupId);
-  if (g) {
-    g.open = !g.open;
-    saveData();
-    updateManageUI();
-  }
+  if (g) { g.open = !g.open; saveData(); updateManageUI(); }
 }
 
 function updateWordField(wordId, field, value) {
@@ -939,14 +886,11 @@ function updateWordField(wordId, field, value) {
 function moveWord(wordId, direction) {
   const index = words.findIndex(w => w.id === wordId);
   if (index === -1) return;
-
   const targetIndex = index + direction;
   if (targetIndex < 0 || targetIndex >= words.length) return;
-
   const temp = words[index];
   words[index] = words[targetIndex];
   words[targetIndex] = temp;
-
   saveData();
   start();
 }
@@ -959,15 +903,8 @@ function addNewWord() {
   } else {
     targetGroup.open = true;
   }
-
   const newId = "w_" + Date.now();
-  words.push({
-    id: newId,
-    groupId: targetGroup.id,
-    en: "",
-    pos: "", // 手動追加時は初期状態で空白にする
-    jp: ""
-  });
+  words.push({ id: newId, groupId: targetGroup.id, en: "", pos: "", jp: "" });
   saveData();
   updateManageUI();
 }
@@ -976,21 +913,13 @@ function importFromGemini() {
   const text = $("pasteInput").value.trim();
   let groupName = $("groupNameInput").value.trim();
   $("importError").textContent = "";
-  
   if (!text) return;
   if (!groupName) groupName = "画像 " + (groups.length + 1);
-
   try {
     const parsed = new Function(`return ${text}`)();
     if (Array.isArray(parsed)) {
       const newGroupId = "g_" + Date.now();
-      
-      groups.push({
-        id: newGroupId,
-        name: groupName,
-        open: true
-      });
-
+      groups.push({ id: newGroupId, name: groupName, open: true });
       const newItems = parsed.map((item, idx) => ({
         id: "w_g_" + Date.now() + "_" + idx,
         groupId: newGroupId,
@@ -998,18 +927,119 @@ function importFromGemini() {
         pos: normalizePos(item.pos),
         jp: item.jp || ""
       }));
-
       words = words.concat(newItems);
       saveData();
-      
-      $("pasteInput").value = "";
-      $("groupNameInput").value = "";
+      $("pasteInput").value = ""; $("groupNameInput").value = "";
       start();
     } else {
       $("importError").textContent = "配列フォーマット形式で貼り付けてください。";
     }
   } catch (err) {
     $("importError").textContent = "コードの解析に失敗しました。フォーマットを確認してください。";
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function processImageWithGemini() {
+  const statusEl = $("aiImageStatus");
+  statusEl.textContent = "";
+  statusEl.style.color = "#111";
+
+  if (!geminiApiKey) {
+    statusEl.textContent = "先に右上⚙️アイコンの「Gemini API設定」でAPIキーを設定してください。";
+    statusEl.style.color = "#ef4444";
+    return;
+  }
+
+  const fileInput = $("aiImageFileInput");
+  if (fileInput.files.length === 0) {
+    statusEl.textContent = "画像ファイルを選択してください。";
+    statusEl.style.color = "#ef4444";
+    return;
+  }
+
+  let groupName = $("aiImageGroupName").value.trim();
+  if (!groupName) groupName = "画像 " + (groups.length + 1);
+
+  const file = fileInput.files[0];
+  statusEl.textContent = "Geminiで画像を解析中...";
+
+  try {
+    const base64Data = await fileToBase64(file);
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+
+    const promptText = `添付された画像から、英単語・品詞・日本語訳をすべて読み取り、以下のJavaScriptの配列フォーマットのみで出力してください。
+解説や前後の説明文は一切不要です。コードブロックのみを出力してください。
+
+[
+  { "en": "単語1", "pos": "品詞1 (n./v./a./ad.)", "jp": "日本語訳1" },
+  { "en": "単語2", "pos": "品詞2 (n./v./a./ad.)", "jp": "日本語訳2" }
+]
+
+【読み取り順序の指定】
+ノートのように左右2列に並んでいる場合は、以下の順序で正確に抽出してください。
+1. 1枚目の「左列」を上から下まで順に読み取る
+2. 1枚目の「右列」を上から下まで順に読み取る
+3. 次の画像へ移動し、同様に「左列」→「右列」の順で上から下まで読み取る
+
+【注意事項】
+・品詞は「名詞 (n.)」「動詞 (v.)」「形容詞 (a.)」「副詞 (ad.)」のいずれかに分類して表記してください。
+・画像内に書かれている単語を1つも漏らさずに最後まで抽出してください。`;
+
+    const requestBody = {
+      contents: [{
+        parts: [
+          { text: promptText },
+          { inlineData: { mimeType: file.type, data: base64Data } }
+        ]
+      }],
+      generationConfig: { responseMimeType: "application/json" }
+    };
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) throw new Error(`APIエラー: ${response.status}`);
+
+    const data = await response.json();
+    const jsonText = data.candidates[0].content.parts[0].text;
+    const parsed = JSON.parse(jsonText);
+
+    if (Array.isArray(parsed)) {
+      const newGroupId = "g_" + Date.now();
+      groups.push({ id: newGroupId, name: groupName, open: true });
+      const newItems = parsed.map((item, idx) => ({
+        id: "w_g_" + Date.now() + "_" + idx,
+        groupId: newGroupId,
+        en: item.en || "",
+        pos: normalizePos(item.pos),
+        jp: item.jp || ""
+      }));
+      words = words.concat(newItems);
+      saveData();
+      
+      statusEl.textContent = "✓ 解析完了！単語を追加しました。";
+      statusEl.style.color = "#16a34a";
+      $("aiImageGroupName").value = "";
+      fileInput.value = "";
+      start();
+    } else {
+      throw new Error("配列データの読み込みに失敗しました。");
+    }
+  } catch (err) {
+    statusEl.textContent = "解析エラー: " + err.message;
+    statusEl.style.color = "#ef4444";
   }
 }
 
@@ -1054,7 +1084,6 @@ function updateManageUI() {
           const globalIdx = words.findIndex(item => item.id === w.id);
           const isFirst = globalIdx === 0;
           const isLast = globalIdx === words.length - 1;
-
           const currentPos = normalizePos(w.pos);
 
           const row = document.createElement("div");
@@ -1080,29 +1109,18 @@ function updateManageUI() {
       }
       card.appendChild(editList);
     }
-
     listEl.appendChild(card);
   });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   initAuth();
-
   $("loginBtn").addEventListener("click", checkPassword);
-  $("passInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.keyCode === 13) checkPassword();
-  });
-
-  $("adminPassInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.keyCode === 13) checkAdminPassword();
-  });
-
+  $("passInput").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.keyCode === 13) checkPassword(); });
+  $("adminPassInput").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.keyCode === 13) checkAdminPassword(); });
   $("check").addEventListener("click", judge);
   $("answer").addEventListener("click", reveal);
-  
-  $("input").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.keyCode === 13) judge();
-  });
+  $("input").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.keyCode === 13) judge(); });
 });
 </script>
 </body>
