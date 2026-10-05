@@ -39,6 +39,40 @@ button{height:50px;border:0;border-radius:11px;font-size:16px;font-weight:600;cu
 .score{font-size:40px;font-weight:800;margin:10px 0}
 .hidden{display:none !important}
 
+/* パスワード入力コンテナ（トグル機能用） */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.password-wrapper input {
+  padding-right: 48px !important;
+}
+.toggle-password-btn {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: 0;
+  height: 40px;
+  width: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+  border-radius: 8px;
+  padding: 0;
+}
+.toggle-password-btn:hover {
+  background: #f0f0f0;
+}
+.toggle-password-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
 /* パスワード保護用 */
 .auth-card{text-align:center;padding:30px 20px}
 .auth-title{font-size:20px;font-weight:700;margin-bottom:10px}
@@ -126,13 +160,47 @@ input:checked + .slider:before {
 /* モーダル表示エリア */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999;padding:15px}
 .modal-content{background:#fff;border-radius:18px;padding:24px 20px;width:min(100%,440px);box-shadow:0 10px 25px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
-.form-group{margin-bottom:12px;text-align:left;}
-.form-group label{font-size:12px;font-weight:bold;color:#555;display:block;margin-bottom:4px;}
+.form-group{margin-bottom:14px;text-align:left;}
+.form-group label{font-size:13px;font-weight:bold;color:#444;display:block;margin-bottom:6px;}
 
-/* 管理者タブ用 */
-.admin-tab-nav{display:flex;gap:6px;border-bottom:2px solid #eee;margin-bottom:16px;padding-bottom:8px}
-.admin-tab-btn{border:0;background:transparent;padding:6px 12px;font-size:14px;font-weight:bold;color:#777;cursor:pointer;border-radius:6px;}
-.admin-tab-btn.active{background:#111;color:#fff;}
+/* 全画面管理者設定画面 */
+.full-screen-admin {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #f3f4f6;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 20px 16px;
+}
+.admin-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.admin-header-title {
+  font-size: 28px;
+  font-weight: 800;
+  text-align: center;
+  margin: 10px 0 20px;
+  color: #111;
+}
+.admin-section-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  border: 2px solid #222;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.admin-section-title {
+  font-size: 22px;
+  font-weight: 700;
+  border: 2px solid #222;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  background: #fff;
+  text-align: center;
+}
 
 @media(max-width:500px){
   .edit-row{grid-template-columns:1fr 1fr;row-gap:6px}
@@ -152,7 +220,16 @@ input:checked + .slider:before {
 <section class="card auth-card" id="authSection">
   <div class="auth-title">パスワード保護</div>
   <div class="auth-desc">利用するにはパスワードを入力してください。</div>
-  <input type="password" id="passInput" placeholder="パスワードを入力" style="margin-bottom: 12px; text-align: center; height:54px; font-size:20px;">
+  <div class="password-wrapper" style="margin-bottom: 12px;">
+    <input type="password" id="passInput" placeholder="パスワードを入力" style="text-align: center; height:54px; font-size:20px;">
+    <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('passInput', this)" title="パスワードの表示切替">
+      <!-- 非表示アイコン (斜線付きの目) -->
+      <svg class="icon-eye-off" viewBox="0 0 24 24">
+        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/>
+        <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
   <button type="button" class="primary" id="loginBtn" style="width: 100%;">解除して始める</button>
   <div class="auth-error" id="authError"></div>
 </section>
@@ -269,7 +346,15 @@ input:checked + .slider:before {
   <div class="modal-content">
     <div class="auth-title">管理者認証</div>
     <div class="auth-desc">管理者パスワードを入力してください。</div>
-    <input type="password" id="adminPassInput" placeholder="管理者パスワード" style="margin-bottom:12px;text-align:center;">
+    <div class="password-wrapper" style="margin-bottom:12px;">
+      <input type="password" id="adminPassInput" placeholder="管理者パスワード" style="text-align:center;">
+      <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('adminPassInput', this)" title="パスワードの表示切替">
+        <svg class="icon-eye-off" viewBox="0 0 24 24">
+          <path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/>
+          <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
     <div style="display:flex;gap:8px;">
       <button type="button" class="secondary" onclick="closeAdminAuthModal()" style="flex:1;">キャンセル</button>
       <button type="button" class="primary" onclick="checkAdminPassword()" style="flex:1;">ログイン</button>
@@ -278,59 +363,68 @@ input:checked + .slider:before {
   </div>
 </div>
 
-<!-- 管理者設定画面モーダル -->
-<div id="adminPanelModal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <div class="auth-title" style="margin-bottom:12px;">管理者設定</div>
+<!-- 全画面表示の管理者設定画面 -->
+<div id="adminPanelModal" class="full-screen-admin hidden">
+  <div class="admin-container">
+    <div class="admin-header-title">管理者設定</div>
 
-    <!-- 管理者画面用タブ -->
-    <div class="admin-tab-nav">
-      <button type="button" class="admin-tab-btn active" id="admTabPassBtn" onclick="switchAdminTab('admTabPass')">パスワード変更</button>
-      <button type="button" class="admin-tab-btn" id="admTabGeneralBtn" onclick="switchAdminTab('admTabGeneral')">一般設定</button>
-    </div>
+    <!-- パスワード変更セクション -->
+    <div class="admin-section-box">
+      <div class="admin-section-title">パスワード変更</div>
 
-    <!-- タブ1: パスワード変更 -->
-    <div id="admTabPass">
       <div class="form-group">
-        <label>① 現行のサイトパスワード</label>
-        <input type="password" id="currentSitePassInput" placeholder="現在のパスワード">
+        <label>現行のサイトパスワード</label>
+        <div class="password-wrapper">
+          <input type="password" id="currentSitePassInput" placeholder="現在のパスワード">
+          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('currentSitePassInput', this)">
+            <svg class="icon-eye-off" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="form-group">
-        <label>② 管理者パスワード</label>
-        <input type="password" id="adminVerifyPassInput" placeholder="管理者パスワード（0530）">
+        <label>管理者パスワード</label>
+        <div class="password-wrapper">
+          <input type="password" id="adminVerifyPassInput" placeholder="管理者パスワード">
+          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('adminVerifyPassInput', this)">
+            <svg class="icon-eye-off" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="form-group">
-        <label>③ 新しいパスワード（1回目）</label>
-        <input type="password" id="newSitePassInput1" placeholder="新しいパスワード">
+        <label>新しいパスワード（1回目）</label>
+        <div class="password-wrapper">
+          <input type="password" id="newSitePassInput1" placeholder="新しいパスワード">
+          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePassInput1', this)">
+            <svg class="icon-eye-off" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="form-group">
-        <label>④ 新しいパスワード（2回目・確認）</label>
-        <input type="password" id="newSitePassInput2" placeholder="新しいパスワード（再入力）">
+        <label>新しいパスワード（2回目・確認）</label>
+        <div class="password-wrapper">
+          <input type="password" id="newSitePassInput2" placeholder="新しいパスワード（再入力）">
+          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePassInput2', this)">
+            <svg class="icon-eye-off" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </div>
 
-      <div id="adminMsg" style="font-size:13px;margin:10px 0;text-align:center;min-height:18px;"></div>
+      <div id="adminMsg" style="font-size:14px;margin:12px 0;text-align:center;min-height:20px;"></div>
 
-      <div style="display:flex;gap:8px;margin-top:10px;">
+      <div style="display:flex;gap:10px;margin-top:16px;">
         <button type="button" class="secondary" onclick="closeAdminPanelModal()" style="flex:1;">閉じる</button>
         <button type="button" class="primary" onclick="saveNewSitePassword()" style="flex:1;">保存</button>
       </div>
     </div>
 
-    <!-- タブ2: 今後追加できる設定（一般設定） -->
-    <div id="admTabGeneral" class="hidden">
-      <div class="setting-row" style="margin-bottom:12px;">
+    <!-- 一般設定・その他セクション -->
+    <div class="admin-section-box">
+      <div class="setting-row" style="padding:0;">
         <span>データ全消去:</span>
-        <button type="button" class="btn-del" style="height:36px;" onclick="resetAllData()">初期化する</button>
-      </div>
-      <p style="font-size:12px;color:#666;line-height:1.4;">
-        ※ここに新しい管理者機能やアプリの設定項目を自由に追加できます。
-      </p>
-
-      <div style="display:flex;gap:8px;margin-top:20px;">
-        <button type="button" class="secondary" onclick="closeAdminPanelModal()" style="width:100%;">閉じる</button>
+        <button type="button" class="btn-del" style="height:38px;" onclick="resetAllData()">初期化する</button>
       </div>
     </div>
 
@@ -348,6 +442,11 @@ const STORAGE_GROUPS_KEY = "eiken_app_groups";
 const STORAGE_WORDS_KEY = "eiken_app_words";
 const STORAGE_POS_SHOW_KEY = "eiken_app_show_pos";
 
+// SVG アイコン定義（開いた目・斜線付きの目）
+const SVG_EYE_OPEN = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+
+const SVG_EYE_OFF = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+
 // データ読み込み
 let sitePasscode = localStorage.getItem(STORAGE_SITE_PASS_KEY) || DEFAULT_SITE_PASS;
 let groups = JSON.parse(localStorage.getItem(STORAGE_GROUPS_KEY)) || [];
@@ -364,6 +463,19 @@ function saveData() {
 let q = [], i = 0, ok = 0, ng = 0, done = false;
 let wrongQueue = [];
 const $ = id => document.getElementById(id);
+
+// パスワード表示／非表示切り替え関数（イラストスタイルのSVGアイコンを使用）
+function togglePassVisibility(inputId, btnEl) {
+  const input = $(inputId);
+  if (!input) return;
+  if (input.type === "password") {
+    input.type = "text";
+    btnEl.innerHTML = SVG_EYE_OPEN; // 表示状態（開いた目）
+  } else {
+    input.type = "password";
+    btnEl.innerHTML = SVG_EYE_OFF; // 非表示状態（斜線付きの目）
+  }
+}
 
 // 連続クリックカウンター
 let titleClickCount = 0;
@@ -386,7 +498,6 @@ function handleTitleClick() {
 // 認証チェック
 function initAuth() {
   const savedPass = localStorage.getItem(STORAGE_AUTH_PASS_KEY);
-  // 正しいパスワードで保存されている場合のみ認証スキップ
   if (savedPass === sitePasscode) {
     unlockApp();
   } else {
@@ -438,7 +549,6 @@ function checkAdminPassword() {
 }
 
 function openAdminPanelModal() {
-  switchAdminTab('admTabPass');
   $("adminMsg").textContent = "";
   $("currentSitePassInput").value = "";
   $("adminVerifyPassInput").value = "";
@@ -449,20 +559,6 @@ function openAdminPanelModal() {
 
 function closeAdminPanelModal() {
   $("adminPanelModal").classList.add("hidden");
-}
-
-function switchAdminTab(tabId) {
-  if (tabId === 'admTabPass') {
-    $("admTabPass").classList.remove("hidden");
-    $("admTabGeneral").classList.add("hidden");
-    $("admTabPassBtn").classList.add("active");
-    $("admTabGeneralBtn").classList.remove("active");
-  } else {
-    $("admTabPass").classList.add("hidden");
-    $("admTabGeneral").classList.remove("hidden");
-    $("admTabPassBtn").classList.remove("active");
-    $("admTabGeneralBtn").classList.add("active");
-  }
 }
 
 function saveNewSitePassword() {
