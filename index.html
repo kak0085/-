@@ -226,7 +226,7 @@ input:checked + .slider:before { transform: translateX(22px); }
       </svg>
     </button>
   </div>
-  <button type="button" class="primary" id="loginBtn" onclick="checkPassword()" style="width: 100%;">解除して始める</button>
+  <button type="button" class="primary" id="loginBtn" style="width: 100%;">解除して始める</button>
   <div class="auth-error" id="authError"></div>
 </section>
 
@@ -260,8 +260,8 @@ input:checked + .slider:before { transform: translateX(22px); }
       <input id="input" type="text" inputmode="latin" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="英単語を入力" style="height:54px; font-size:20px;">
 
       <div class="buttons" id="btnContainer">
-        <button type="button" class="primary" id="check" onclick="checkAnswer()">答え合わせ</button>
-        <button type="button" class="secondary" id="answer" onclick="showAnswer()">答えを見る</button>
+        <button type="button" class="primary" id="check">答え合わせ</button>
+        <button type="button" class="secondary" id="answer">答えを見る</button>
       </div>
 
       <div class="feedback" id="feedback"></div>
@@ -332,7 +332,7 @@ input:checked + .slider:before { transform: translateX(22px); }
       <div class="paste-box">
         <label>AIが出力したコードを直接貼り付け</label>
         <input type="text" id="groupNameInput" placeholder="画像名やグループ名（例: ノート1枚目）" style="height:38px;font-size:14px;margin-bottom:8px;">
-        <textarea id="pasteInput" rows="3" placeholder="ここにJSONデータを貼り付け"></textarea>
+        <textarea id="pasteInput" rows="3" placeholder="ここにコードを貼り付け"></textarea>
         <button type="button" class="secondary" onclick="importFromGemini()" style="width:100%;height:40px;margin-top:8px;font-size:14px;">コードから追加する</button>
         <div id="importError" style="color:#ef4444;font-size:12px;margin-top:4px;"></div>
       </div>
@@ -511,7 +511,7 @@ let q = [], i = 0, ok = 0, ng = 0, done = false;
 let wrongQueue = [];
 const $ = id => document.getElementById(id);
 
-/* 歯車ボタンをクリックした時の処理 */
+/* 歯車ボタンをクリックした時の処理（45度回転＋設定画面切替） */
 function handleGearClick(btnEl) {
   const btns = document.querySelectorAll('.gear-btn');
   btns.forEach(b => b.classList.add("rotate-45"));
@@ -572,7 +572,6 @@ function unlockApp() {
   $("authSection").classList.add("hidden");
   $("mainContent").classList.remove("hidden");
   updatePosToggleUI();
-  renderWordManagement();
   start();
 }
 
@@ -642,19 +641,17 @@ function openPassChangeModal() {
 function closePassChangeModal() { $("passChangeModal").classList.add("hidden"); }
 
 function saveSitePassword() {
-  const curPass = $("curSitePass").value;
-  const newPass1 = $("newSitePass1").value;
-  const newPass2 = $("newSitePass2").value;
+  const curPass = $("curSitePass").value, newPass1 = $("newSitePass1").value, newPass2 = $("newSitePass2").value;
   $("passModalMsg").style.color = "#ef4444";
   if (!curPass || !newPass1 || !newPass2) { $("passModalMsg").textContent = "すべての項目を入力してください。"; return; }
   if (curPass !== sitePasscode) { $("passModalMsg").textContent = "現在のサイトパスワードが一致しません。"; return; }
-  if (newPass1 !== newPass2) { $("passModalMsg").textContent = "新しいパスワードが一致しません。"; return; }
+  if (newPass1 !== newPass2) { $("passModalMsg").textContent = "新しいサイトパスワードが一致しません。"; return; }
   sitePasscode = newPass1;
-  localStorage.setItem(STORAGE_AUTH_PASS_KEY, newPass1);
   saveData();
+  localStorage.removeItem(STORAGE_AUTH_PASS_KEY);
   $("passModalMsg").style.color = "#16a34a";
-  $("passModalMsg").textContent = "サイトパスワードを更新しました。";
-  setTimeout(() => closePassChangeModal(), 1200);
+  $("passModalMsg").textContent = "サイトパスワードを更新しました。次回ログイン時に適用されます。";
+  $("curSitePass").value = ""; $("newSitePass1").value = ""; $("newSitePass2").value = "";
 }
 
 function openAdminPassChangeModal() {
@@ -665,393 +662,460 @@ function openAdminPassChangeModal() {
 function closeAdminPassChangeModal() { $("adminPassChangeModal").classList.add("hidden"); }
 
 function saveAdminPassword() {
-  const curPass = $("curAdminPass").value;
-  const newPass1 = $("newAdminPass1").value;
-  const newPass2 = $("newAdminPass2").value;
+  const curPass = $("curAdminPass").value, newPass1 = $("newAdminPass1").value, newPass2 = $("newAdminPass2").value;
   $("adminPassModalMsg").style.color = "#ef4444";
   if (!curPass || !newPass1 || !newPass2) { $("adminPassModalMsg").textContent = "すべての項目を入力してください。"; return; }
   if (curPass !== adminPasscode) { $("adminPassModalMsg").textContent = "現在の管理者パスワードが一致しません。"; return; }
-  if (newPass1 !== newPass2) { $("adminPassModalMsg").textContent = "新しいパスワードが一致しません。"; return; }
+  if (newPass1 !== newPass2) { $("adminPassModalMsg").textContent = "新しい管理者パスワードが一致しません。"; return; }
   adminPasscode = newPass1;
   saveData();
+  sessionStorage.removeItem(SESSION_ADMIN_AUTH_KEY);
   $("adminPassModalMsg").style.color = "#16a34a";
-  $("adminPassModalMsg").textContent = "管理者パスワードを更新しました。";
-  setTimeout(() => closeAdminPassChangeModal(), 1200);
+  $("adminPassModalMsg").textContent = "管理者パスワードを変更しました！";
+  $("curAdminPass").value = ""; $("newAdminPass1").value = ""; $("newAdminPass2").value = "";
 }
 
-/* 画面切替 */
-function switchPage(pageId) {
-  $("quizPage").classList.add("hidden");
-  $("managePage").classList.add("hidden");
-  $("tabQuizBtn").classList.remove("active");
-  $("tabManageBtn").classList.remove("active");
+function shuffle(a) { return a.slice().sort(() => Math.random() - .5); }
 
-  $(pageId).classList.remove("hidden");
-  if (pageId === 'quizPage') {
-    $("tabQuizBtn").classList.add("active");
-  } else {
-    $("tabManageBtn").classList.add("active");
-    renderWordManagement();
-  }
+function norm(s) {
+  if (!s) return "";
+  return s.trim().replace(/[Ａ-Ｚａ-ｚ０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0)).toLowerCase();
+}
+
+function normalizePos(rawPos) {
+  if (!rawPos) return "";
+  const p = rawPos.toString().toLowerCase();
+  if (p.includes("動詞") || p.includes("他") || p.includes("自") || p.includes("v.") || p.includes("verb") || p.includes("vt") || p.includes("vi") || p === "v") return "動詞 (v.)";
+  if (p.includes("形容詞") || p.includes("a.") || p.includes("adj") || p === "a") return "形容詞 (a.)";
+  if (p.includes("副詞") || p.includes("ad.") || p.includes("adv") || p === "ad") return "副詞 (ad.)";
+  if (p.includes("名詞") || p.includes("n.") || p.includes("noun") || p === "n") return "名詞 (n.)";
+  return "";
 }
 
 function togglePosVisibility() {
   showPos = $("posToggleCheckbox").checked;
   saveData();
-  renderQuestion();
+  if (q.length > 0 && q[i]) {
+    $("pos").style.display = showPos ? "inline-block" : "none";
+  }
 }
 
-function updatePosToggleUI() {
-  $("posToggleCheckbox").checked = showPos;
+function updatePosToggleUI() { $("posToggleCheckbox").checked = showPos; }
+
+function switchPage(pageId) {
+  if (pageId === 'quizPage') {
+    $("quizPage").classList.remove("hidden");
+    $("managePage").classList.add("hidden");
+    $("tabQuizBtn").classList.add("active");
+    $("tabManageBtn").classList.remove("active");
+  } else {
+    $("quizPage").classList.add("hidden");
+    $("managePage").classList.remove("hidden");
+    $("tabQuizBtn").classList.remove("active");
+    $("tabManageBtn").classList.add("active");
+    updateManageUI();
+  }
 }
 
-/* クイズロジック */
 function start() {
-  wrongQueue = [];
-  if (words.length === 0) {
+  const validWords = words.filter(w => w.en.trim() !== "" || w.jp.trim() !== "");
+  if (validWords.length === 0) {
     $("quiz").classList.add("hidden");
     $("result").classList.add("hidden");
     $("noWordsMsg").classList.remove("hidden");
+    updateManageUI();
     return;
   }
   $("noWordsMsg").classList.add("hidden");
+  const orderMode = $("orderSelect").value;
+  q = (orderMode === "random") ? shuffle(validWords) : validWords.slice();
+  wrongQueue = [];
+  i = 0; ok = 0; ng = 0;
   $("quiz").classList.remove("hidden");
   $("result").classList.add("hidden");
-
-  q = [...words];
-  if ($("orderSelect").value === "random") {
-    q.sort(() => Math.random() - 0.5);
-  }
-  i = 0; ok = 0; ng = 0; done = false;
-  updateStats();
-  renderQuestion();
+  show();
+  updateManageUI();
 }
 
-function renderQuestion() {
-  if (i >= q.length) {
-    showResult();
-    return;
-  }
+function startRetryWrong() {
+  if (wrongQueue.length === 0) return;
+  const orderMode = $("orderSelect").value;
+  q = (orderMode === "random") ? shuffle(wrongQueue) : wrongQueue.slice();
+  wrongQueue = [];
+  i = 0; ok = 0; ng = 0;
+  $("quiz").classList.remove("hidden");
+  $("result").classList.add("hidden");
+  show();
+}
+
+function show() {
   done = false;
-  const current = q[i];
-  $("jp").textContent = current.jp || "-";
-  $("pos").textContent = current.pos || "その他";
+  const w = q[i];
+  $("count").textContent = (i + 1) + " / " + q.length;
+  $("fill").style.width = (i / q.length * 100) + "%";
+  $("jp").textContent = w.jp || "（未設定）";
+  $("pos").textContent = w.pos || "未設定";
   $("pos").style.display = showPos ? "inline-block" : "none";
   $("input").value = "";
   $("input").disabled = false;
   $("feedback").className = "feedback";
   $("feedback").innerHTML = "";
-  $("btnContainer").className = "buttons";
-  $("check").classList.remove("hidden");
+  $("btnContainer").classList.remove("single");
+  $("check").textContent = "答え合わせ";
   $("answer").classList.remove("hidden");
-
-  $("count").textContent = `${i + 1} / ${q.length}`;
-  $("fill").style.width = `${((i) / q.length) * 100}%`;
   $("input").focus();
+  $("ok").textContent = "正解 " + ok;
+  $("ng").textContent = "不正解 " + ng;
+  $("score").textContent = "正解 " + ok;
 }
 
-function checkAnswer() {
-  if (done) { i++; renderQuestion(); return; }
-  const userInput = $("input").value.trim().toLowerCase();
-  const current = q[i];
-  const target = (current.en || "").trim().toLowerCase();
+function next() {
+  i++;
+  if (i >= q.length) finish();
+  else show();
+}
 
-  if (!userInput) return;
-
+function setNextState() {
   done = true;
   $("input").disabled = true;
+  $("btnContainer").classList.add("single");
+  $("check").textContent = "次の問題";
+  $("answer").classList.add("hidden");
+  $("ok").textContent = "正解 " + ok;
+  $("ng").textContent = "不正解 " + ng;
+  $("score").textContent = "正解 " + ok;
+}
 
-  if (userInput === target) {
-    ok++;
-    $("feedback").className = "feedback good";
-    $("feedback").innerHTML = `<div>⭕ 正解！</div>`;
-  } else {
-    ng++;
-    wrongQueue.push(current);
+function judge() {
+  if (done) { next(); return; }
+  const val = $("input").value;
+  if (!val.trim()) {
     $("feedback").className = "feedback bad";
-    $("feedback").innerHTML = `<div>❌ 不正解...</div><div class="answer">正解: ${current.en}</div>`;
-  }
-  updateStats();
-  $("btnContainer").className = "buttons single";
-  $("check").textContent = "次へ進む";
-  $("answer").classList.add("hidden");
-}
-
-function showAnswer() {
-  if (done) return;
-  done = true;
-  ng++;
-  const current = q[i];
-  wrongQueue.push(current);
-  $("input").disabled = true;
-  $("feedback").className = "feedback bad";
-  $("feedback").innerHTML = `<div>解答表示</div><div class="answer">正解: ${current.en}</div>`;
-  updateStats();
-  $("btnContainer").className = "buttons single";
-  $("check").textContent = "次へ進む";
-  $("answer").classList.add("hidden");
-}
-
-function updateStats() {
-  $("ok").textContent = `正解 ${ok}`;
-  $("ng").textContent = `不正解 ${ng}`;
-  $("score").textContent = `正解 ${ok}`;
-}
-
-function showResult() {
-  $("quiz").classList.add("hidden");
-  $("result").classList.remove("hidden");
-  $("finalScore").textContent = `${ok} / ${q.length}`;
-  const rate = q.length > 0 ? Math.round((ok / q.length) * 100) : 0;
-  $("rate").textContent = `正答率: ${rate}%`;
-
-  if (wrongQueue.length > 0) {
-    $("wrongListBox").classList.remove("hidden");
-    $("retryWrongBtn").classList.remove("hidden");
-    $("wrongListCount").textContent = `${wrongQueue.length}問`;
-    $("wrongListItems").innerHTML = wrongQueue.map(item => `
-      <div class="wrong-item">
-        <span class="en">${item.en}</span>
-        <span class="jp-pos">${item.jp} (${item.pos || 'その他'})</span>
-      </div>
-    `).join('');
-  } else {
-    $("wrongListBox").classList.add("hidden");
-    $("retryWrongBtn").classList.add("hidden");
-  }
-}
-
-function startRetryWrong() {
-  if (wrongQueue.length === 0) return;
-  q = [...wrongQueue];
-  wrongQueue = [];
-  if ($("orderSelect").value === "random") {
-    q.sort(() => Math.random() - 0.5);
-  }
-  i = 0; ok = 0; ng = 0; done = false;
-  $("result").classList.add("hidden");
-  $("quiz").classList.remove("hidden");
-  updateStats();
-  renderQuestion();
-}
-
-/* データ管理・単語編集 */
-function renderWordManagement() {
-  $("totalWordCount").textContent = `計 ${words.length} 単語`;
-  const listEl = $("imageList");
-  listEl.innerHTML = "";
-
-  if (words.length === 0) {
-    listEl.innerHTML = `<div class="empty-msg">単語が登録されていません。</div>`;
+    $("feedback").innerHTML = "単語を入力してください。";
     return;
   }
-
-  // グループごとに分類
-  const groupMap = {};
-  words.forEach((w, idx) => {
-    const gName = w.group || "未分類";
-    if (!groupMap[gName]) groupMap[gName] = [];
-    groupMap[gName].push({ ...w, originalIndex: idx });
-  });
-
-  Object.keys(groupMap).forEach(groupName => {
-    const groupWords = groupMap[groupName];
-    const card = document.createElement("div");
-    card.className = "image-card";
-
-    card.innerHTML = `
-      <div class="image-header">
-        <div class="image-info" onclick="toggleGroupExpand('${groupName}')">
-          <div class="image-name">${groupName}</div>
-          <div class="image-meta">${groupWords.length} 単語</div>
-        </div>
-        <div class="action-btns">
-          <button type="button" class="btn-toggle" onclick="toggleGroupExpand('${groupName}')">編集</button>
-          <button type="button" class="btn-del" onclick="deleteGroup('${groupName}')">削除</button>
-        </div>
-      </div>
-      <div class="word-edit-list hidden" id="group-edit-${groupName}">
-        ${groupWords.map((item, gIdx) => `
-          <div class="edit-row">
-            <input type="text" class="edit-input" value="${item.en \vert{}\vert{} ''}" onchange="updateWord(${item.originalIndex}, 'en', this.value)" placeholder="英単語">
-            <input type="text" class="edit-input" value="${item.jp \vert{}\vert{} ''}" onchange="updateWord(${item.originalIndex}, 'jp', this.value)" placeholder="和訳">
-            <select class="edit-select" onchange="updateWord(${item.originalIndex}, 'pos', this.value)">
-              <option value="名詞" ${item.pos === '名詞' ? 'selected' : ''}>名詞</option>
-              <option value="動詞" ${item.pos === '動詞' ? 'selected' : ''}>動詞</option>
-              <option value="形容詞" ${item.pos === '形容詞' ? 'selected' : ''}>形容詞</option>
-              <option value="副詞" ${item.pos === '副詞' ? 'selected' : ''}>副詞</option>
-              <option value="熟語" ${item.pos === '熟語' ? 'selected' : ''}>熟語</option>
-              <option value="その他" ${!['名詞','動詞','形容詞','副詞','熟語'].includes(item.pos) ? 'selected' : ''}>その他</option>
-            </select>
-            <div class="move-btns">
-              <button type="button" class="btn-arrow" onclick="moveWord(${item.originalIndex}, -1)">▲</button>
-              <button type="button" class="btn-arrow" onclick="moveWord(${item.originalIndex}, 1)">▼</button>
-            </div>
-            <button type="button" class="btn-icon-del" onclick="deleteWord(${item.originalIndex})">×</button>
-          </div>
-        `).join('')}
-      </div>
-    `;
-    listEl.appendChild(card);
-  });
+  const right = norm(val) === norm(q[i].en);
+  if (right) {
+    ok++;
+    $("feedback").className = "feedback good";
+    $("feedback").innerHTML = "正解！<br><span class='answer'>" + q[i].en + "</span>";
+  } else {
+    ng++;
+    wrongQueue.push(q[i]);
+    $("feedback").className = "feedback bad";
+    $("feedback").innerHTML = "不正解。正解は<br><span class='answer'>" + q[i].en + "</span>";
+  }
+  setNextState();
 }
 
-function toggleGroupExpand(groupName) {
-  const target = $(`group-edit-${groupName}`);
-  if (target) target.classList.toggle("hidden");
+function reveal() {
+  if (done) { next(); return; }
+  ng++;
+  wrongQueue.push(q[i]);
+  $("feedback").className = "feedback bad";
+  $("feedback").innerHTML = "正解：<span class='answer'>" + q[i].en + "</span>";
+  setNextState();
 }
 
-function updateWord(index, key, val) {
-  if (words[index]) {
-    words[index][key] = val;
-    saveData();
+function finish() {
+  $("fill").style.width = "100%";
+  $("quiz").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("finalScore").textContent = ok + " / " + q.length;
+  $("rate").textContent = "正答率 " + Math.round(ok / q.length * 100) + "%";
+  const retryBtn = $("retryWrongBtn"), wrongBox = $("wrongListBox"), wrongListItems = $("wrongListItems");
+  if (wrongQueue.length > 0) {
+    wrongBox.classList.remove("hidden");
+    $("wrongListCount").textContent = wrongQueue.length + "問";
+    wrongListItems.innerHTML = "";
+    wrongQueue.forEach(w => {
+      const item = document.createElement("div");
+      item.className = "wrong-item";
+      const posHtml = (showPos && w.pos) ? ` <span style="font-size:11px;color:#888;">(${w.pos})</span>` : "";
+      item.innerHTML = `<div class="en">${w.en}</div><div class="jp-pos">${w.jp}${posHtml}</div>`;
+      wrongListItems.appendChild(item);
+    });
+    retryBtn.classList.remove("hidden");
+    retryBtn.textContent = `間違えた問題 (${wrongQueue.length}問) で再挑戦`;
+  } else {
+    wrongBox.classList.add("hidden");
+    wrongListItems.innerHTML = "";
+    retryBtn.classList.add("hidden");
+    $("rate").innerHTML += "<br><br><span style='color:#16a34a;font-weight:bold;font-size:18px;'>全問正解！おめでとうございます！</span>";
   }
 }
 
-function moveWord(index, direction) {
+function deleteSingleWord(wordId) {
+  words = words.filter(w => w.id !== wordId);
+  saveData();
+  start();
+}
+
+function deleteGroup(groupId) {
+  if (confirm("この画像に登録されているすべての単語を削除しますか？")) {
+    words = words.filter(w => w.groupId !== groupId);
+    groups = groups.filter(g => g.id !== groupId);
+    saveData();
+    start();
+  }
+}
+
+function toggleAccordion(groupId) {
+  const g = groups.find(item => item.id === groupId);
+  if (g) { g.open = !g.open; saveData(); updateManageUI(); }
+}
+
+function updateWordField(wordId, field, value) {
+  const w = words.find(item => item.id === wordId);
+  if (w) {
+    w[field] = (field === 'pos') ? normalizePos(value) : value.trim();
+    saveData();
+    if (q[i] && q[i].id === wordId) {
+      if (field === 'jp') $("jp").textContent = w.jp;
+      if (field === 'pos') $("pos").textContent = w.pos || "未設定";
+    }
+  }
+}
+
+function moveWord(wordId, direction) {
+  const index = words.findIndex(w => w.id === wordId);
+  if (index === -1) return;
   const targetIndex = index + direction;
   if (targetIndex < 0 || targetIndex >= words.length) return;
   const temp = words[index];
   words[index] = words[targetIndex];
   words[targetIndex] = temp;
   saveData();
-  renderWordManagement();
-}
-
-function deleteWord(index) {
-  words.splice(index, 1);
-  saveData();
-  renderWordManagement();
-}
-
-function deleteGroup(groupName) {
-  if (confirm(`「${groupName}」の単語をすべて削除しますか？`)) {
-    words = words.filter(w => (w.group || "未分類") !== groupName);
-    saveData();
-    renderWordManagement();
-  }
+  start();
 }
 
 function addNewWord() {
-  words.push({ en: "", jp: "", pos: "名詞", group: "手動追加" });
+  let targetGroup = groups[groups.length - 1];
+  if (!targetGroup) {
+    targetGroup = { id: "g_" + Date.now(), name: "手動追加データ", open: true };
+    groups.push(targetGroup);
+  } else {
+    targetGroup.open = true;
+  }
+  const newId = "w_" + Date.now();
+  words.push({ id: newId, groupId: targetGroup.id, en: "", pos: "", jp: "" });
   saveData();
-  renderWordManagement();
+  updateManageUI();
 }
 
 function importFromGemini() {
-  const gName = $("groupNameInput").value.trim() || "インポートデータ";
-  const rawText = $("pasteInput").value.trim();
+  const text = $("pasteInput").value.trim();
+  let groupName = $("groupNameInput").value.trim();
   $("importError").textContent = "";
-
-  if (!rawText) {
-    $("importError").textContent = "コードを貼り付けてください。";
-    return;
-  }
-
+  if (!text) return;
+  if (!groupName) groupName = "画像 " + (groups.length + 1);
   try {
-    const jsonMatch = rawText.match(/\[[\s\S]*\]/);
-    const parseTarget = jsonMatch ? jsonMatch[0] : rawText;
-    const parsed = JSON.parse(parseTarget);
-
+    const parsed = new Function(`return ${text}`)();
     if (Array.isArray(parsed)) {
-      parsed.forEach(item => {
-        words.push({
-          en: item.en || item.word || "",
-          jp: item.jp || item.meaning || "",
-          pos: item.pos || "名詞",
-          group: gName
-        });
-      });
+      const newGroupId = "g_" + Date.now();
+      groups.push({ id: newGroupId, name: groupName, open: true });
+      const newItems = parsed.map((item, idx) => ({
+        id: "w_g_" + Date.now() + "_" + idx,
+        groupId: newGroupId,
+        en: item.en || "",
+        pos: normalizePos(item.pos),
+        jp: item.jp || ""
+      }));
+      words = words.concat(newItems);
       saveData();
-      $("pasteInput").value = "";
-      $("groupNameInput").value = "";
-      renderWordManagement();
-      alert(`${parsed.length}件の単語を追加しました。`);
+      $("pasteInput").value = ""; $("groupNameInput").value = "";
+      start();
     } else {
-      $("importError").textContent = "配列形式のJSONを指定してください。";
+      $("importError").textContent = "配列フォーマット形式で貼り付けてください。";
     }
   } catch (err) {
-    $("importError").textContent = "JSONのパースに失敗しました。構造を確認してください。";
+    $("importError").textContent = "コードの解析に失敗しました。フォーマットを確認してください。";
   }
 }
 
-/* Gemini API 画像OCR */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
 async function processImageWithGemini() {
-  const fileInput = $("aiImageFileInput");
-  const gName = $("aiImageGroupName").value.trim() || "画像読み込み";
   const statusEl = $("aiImageStatus");
+  statusEl.textContent = "";
+  statusEl.style.color = "#111";
 
   if (!geminiApiKey) {
-    statusEl.textContent = "⚙️ 右上の歯車アイコンからGemini APIキーを設定してください。";
+    statusEl.textContent = "先に右上⚙️アイコンの「詳細設定」でAPIキーを設定してください。";
     statusEl.style.color = "#ef4444";
     return;
   }
 
-  if (!fileInput.files || fileInput.files.length === 0) {
+  const fileInput = $("aiImageFileInput");
+  if (fileInput.files.length === 0) {
     statusEl.textContent = "画像ファイルを選択してください。";
     statusEl.style.color = "#ef4444";
     return;
   }
 
+  let groupName = $("aiImageGroupName").value.trim();
+  if (!groupName) groupName = "画像 " + (groups.length + 1);
+
   const file = fileInput.files[0];
-  statusEl.textContent = "画像を解析中...";
-  statusEl.style.color = "#111";
+  statusEl.textContent = "Geminiで画像を解析中...";
 
   try {
-    const base64Data = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    const base64Data = await fileToBase64(file);
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
-    const promptText = `この画像内の英単語、日本語訳、品詞を抽出し、以下のJSON配列形式でのみ出力してください。他の文章は不要です。\n[{"en": "apple", "jp": "りんご", "pos": "名詞"}]`;
+    const promptText = `添付された画像から、英単語・品詞・日本語訳をすべて読み取り、以下のJavaScriptの配列フォーマットのみで出力してください。
+解説や前後の説明文は一切不要です。コードブロックのみを出力してください。
+
+[
+  { "en": "単語1", "pos": "品詞1 (n./v./a./ad.)", "jp": "日本語訳1" },
+  { "en": "単語2", "pos": "品詞2 (n./v./a./ad.)", "jp": "日本語訳2" }
+]
+
+【読み取り順序の指定】
+ノートのように左右2列に並んでいる場合は、以下の順序で正確に抽出してください。
+1. 1枚目の「左列」を上から下まで順に読み取る
+2. 1枚目の「右列」を上から下まで順に読み取る
+3. 次の画像へ移動し、同様に「左列」→「右列」の順で上から下まで読み取る
+
+【注意事項】
+・品詞は「名詞 (n.)」「動詞 (v.)」「形容詞 (a.)」「副詞 (ad.)」のいずれかに分類して表記してください。
+・画像内に書かれている単語を1つも漏らさずに最後まで抽出してください。`;
+
+    const requestBody = {
+      contents: [{
+        parts: [
+          { text: promptText },
+          { inlineData: { mimeType: file.type, data: base64Data } }
+        ]
+      }],
+      generationConfig: { responseMimeType: "application/json" }
+    };
 
     const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: promptText },
-            { inline_data: { mime_type: file.type, data: base64Data } }
-          ]
-        }]
-      })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
     });
+
+    if (!response.ok) throw new Error(`APIエラー: ${response.status}`);
 
     const data = await response.json();
-    if (data.error) throw new Error(data.error.message || "APIエラー");
+    const jsonText = data.candidates[0].content.parts[0].text;
+    const parsed = JSON.parse(jsonText);
 
-    const text = data.candidates[0].content.parts[0].text;
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error("JSONデータの抽出に失敗しました。");
-
-    const parsed = JSON.parse(jsonMatch[0]);
-    parsed.forEach(item => {
-      words.push({
+    if (Array.isArray(parsed)) {
+      const newGroupId = "g_" + Date.now();
+      groups.push({ id: newGroupId, name: groupName, open: true });
+      const newItems = parsed.map((item, idx) => ({
+        id: "w_g_" + Date.now() + "_" + idx,
+        groupId: newGroupId,
         en: item.en || "",
-        jp: item.jp || "",
-        pos: item.pos || "名詞",
-        group: gName
-      });
-    });
-
-    saveData();
-    statusEl.textContent = `✓ ${parsed.length}個の単語を追加しました！`;
-    statusEl.style.color = "#16a34a";
-    fileInput.value = "";
-    $("aiImageGroupName").value = "";
-    renderWordManagement();
-  } catch (e) {
-    statusEl.textContent = `エラー: ${e.message}`;
+        pos: normalizePos(item.pos),
+        jp: item.jp || ""
+      }));
+      words = words.concat(newItems);
+      saveData();
+      
+      statusEl.textContent = "✓ 解析完了！単語を追加しました。";
+      statusEl.style.color = "#16a34a";
+      $("aiImageGroupName").value = "";
+      fileInput.value = "";
+      start();
+    } else {
+      throw new Error("配列データの読み込みに失敗しました。");
+    }
+  } catch (err) {
+    statusEl.textContent = "解析エラー: " + err.message;
     statusEl.style.color = "#ef4444";
   }
 }
 
-// 初期化実行
-window.addEventListener("DOMContentLoaded", initAuth);
+function updateManageUI() {
+  const validWordCount = words.filter(w => w.en.trim() !== "" || w.jp.trim() !== "").length;
+  $("totalWordCount").textContent = `計 ${validWordCount} 単語`;
+  const listEl = $("imageList");
+  listEl.innerHTML = "";
+
+  if (groups.length === 0) {
+    listEl.innerHTML = `<div class="empty-msg">登録されている画像データはありません</div>`;
+    return;
+  }
+
+  groups.forEach(g => {
+    const groupWords = words.filter(w => w.groupId === g.id);
+    const card = document.createElement("div");
+    card.className = "image-card";
+
+    const header = document.createElement("div");
+    header.className = "image-header";
+    header.innerHTML = `
+      <div class="image-info" onclick="toggleAccordion('${g.id}')">
+        <div class="image-name">${g.name}</div>
+        <div class="image-meta">${groupWords.length} 単語</div>
+      </div>
+      <div class="action-btns">
+        <button type="button" class="btn-toggle" onclick="toggleAccordion('${g.id}')">${g.open ? '閉じる' : '編集'}</button>
+        <button type="button" class="btn-del" onclick="deleteGroup('${g.id}')">削除</button>
+      </div>
+    `;
+    card.appendChild(header);
+
+    if (g.open) {
+      const editList = document.createElement("div");
+      editList.className = "word-edit-list";
+
+      if (groupWords.length === 0) {
+        editList.innerHTML = `<div class="empty-msg">この画像に単語はありません</div>`;
+      } else {
+        groupWords.forEach((w) => {
+          const globalIdx = words.findIndex(item => item.id === w.id);
+          const isFirst = globalIdx === 0;
+          const isLast = globalIdx === words.length - 1;
+          const currentPos = normalizePos(w.pos);
+
+          const row = document.createElement("div");
+          row.className = "edit-row";
+          row.innerHTML = `
+            <input type="text" class="edit-input" value="${w.en}" placeholder="英単語" onchange="updateWordField('${w.id}', 'en', this.value)">
+            <input type="text" class="edit-input" value="${w.jp}" placeholder="日本語" onchange="updateWordField('${w.id}', 'jp', this.value)">
+            <select class="edit-select" onchange="updateWordField('${w.id}', 'pos', this.value)">
+              <option value="" ${currentPos === '' ? 'selected' : ''}>--</option>
+              <option value="名詞 (n.)" ${currentPos === '名詞 (n.)' ? 'selected' : ''}>名詞 (n.)</option>
+              <option value="動詞 (v.)" ${currentPos === '動詞 (v.)' ? 'selected' : ''}>動詞 (v.)</option>
+              <option value="形容詞 (a.)" ${currentPos === '形容詞 (a.)' ? 'selected' : ''}>形容詞 (a.)</option>
+              <option value="副詞 (ad.)" ${currentPos === '副詞 (ad.)' ? 'selected' : ''}>副詞 (ad.)</option>
+            </select>
+            <div class="move-btns">
+              <button type="button" class="btn-arrow" ${isFirst ? 'disabled' : ''} onclick="moveWord('${w.id}', -1)">▲</button>
+              <button type="button" class="btn-arrow" ${isLast ? 'disabled' : ''} onclick="moveWord('${w.id}', 1)">▼</button>
+            </div>
+            <button type="button" class="btn-icon-del" title="削除" onclick="deleteSingleWord('${w.id}')">✕</button>
+          `;
+          editList.appendChild(row);
+        });
+      }
+      card.appendChild(editList);
+    }
+    listEl.appendChild(card);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initAuth();
+  $("loginBtn").addEventListener("click", checkPassword);
+  $("passInput").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.keyCode === 13) checkPassword(); });
+  $("adminPassInput").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.keyCode === 13) checkAdminPassword(); });
+  $("check").addEventListener("click", judge);
+  $("answer").addEventListener("click", reveal);
+  $("input").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.keyCode === 13) judge(); });
+});
 </script>
 </body>
 </html>
