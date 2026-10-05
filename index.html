@@ -377,7 +377,7 @@ input:checked + .slider:before {
     <div class="auth-title" style="text-align:center; margin-bottom:15px;">サイトパスワードの変更</div>
       
     <div class="form-group">
-      <label>現行のサイトパスワード</label>
+      <label>現在のサイトパスワード</label>
       <div class="password-wrapper">
         <input type="password" id="curSitePass" placeholder="現在のサイトパスワード">
         <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('curSitePass', this)">
@@ -422,7 +422,7 @@ input:checked + .slider:before {
     <div class="auth-title" style="text-align:center; margin-bottom:15px;">管理者パスワード変更</div>
 
     <div class="form-group">
-      <label>現行の管理者パスワード</label>
+      <label>現在の管理者パスワード</label>
       <div class="password-wrapper">
         <input type="password" id="curAdminPass" placeholder="現在の管理者パスワード">
         <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('curAdminPass', this)">
@@ -704,13 +704,18 @@ function norm(s) {
 }
 
 function normalizePos(rawPos) {
-  if (!rawPos) return "名詞 (n.)";
+  if (!rawPos) return "";
   const p = rawPos.toString().toLowerCase();
-  if (p.includes("動詞") || p.includes("v.") || p.includes("verb") || p === "v") return "動詞 (v.)";
+  
+  // 動詞の拡張判定（他動詞, vt., 自動詞, vi., 他, 自 含む）
+  if (p.includes("動詞") || p.includes("他") || p.includes("自") || p.includes("v.") || p.includes("verb") || p.includes("vt") || p.includes("vi") || p === "v") {
+    return "動詞 (v.)";
+  }
   if (p.includes("形容詞") || p.includes("a.") || p.includes("adj") || p === "a") return "形容詞 (a.)";
   if (p.includes("副詞") || p.includes("ad.") || p.includes("adv") || p === "ad") return "副詞 (ad.)";
   if (p.includes("名詞") || p.includes("n.") || p.includes("noun") || p === "n") return "名詞 (n.)";
-  return "名詞 (n.)";
+  
+  return "";
 }
 
 function togglePosVisibility() {
@@ -790,7 +795,7 @@ function show() {
   $("count").textContent = (i + 1) + " / " + q.length;
   $("fill").style.width = (i / q.length * 100) + "%";
   $("jp").textContent = w.jp || "（未設定）";
-  $("pos").textContent = w.pos || "名詞 (n.)";
+  $("pos").textContent = w.pos || "未設定";
   $("pos").style.display = showPos ? "inline-block" : "none";
   
   $("input").value = "";
@@ -877,7 +882,7 @@ function finish() {
     wrongQueue.forEach(w => {
       const item = document.createElement("div");
       item.className = "wrong-item";
-      const posHtml = showPos ? ` <span style="font-size:11px;color:#888;">(${w.pos})</span>` : "";
+      const posHtml = (showPos && w.pos) ? ` <span style="font-size:11px;color:#888;">(${w.pos})</span>` : "";
       item.innerHTML = `
         <div class="en">${w.en}</div>
         <div class="jp-pos">${w.jp}${posHtml}</div>
@@ -926,7 +931,7 @@ function updateWordField(wordId, field, value) {
     saveData();
     if (q[i] && q[i].id === wordId) {
       if (field === 'jp') $("jp").textContent = w.jp;
-      if (field === 'pos') $("pos").textContent = w.pos;
+      if (field === 'pos') $("pos").textContent = w.pos || "未設定";
     }
   }
 }
@@ -960,7 +965,7 @@ function addNewWord() {
     id: newId,
     groupId: targetGroup.id,
     en: "",
-    pos: "名詞 (n.)",
+    pos: "", // 手動追加時は初期状態で空白にする
     jp: ""
   });
   saveData();
@@ -1058,6 +1063,7 @@ function updateManageUI() {
             <input type="text" class="edit-input" value="${w.en}" placeholder="英単語" onchange="updateWordField('${w.id}', 'en', this.value)">
             <input type="text" class="edit-input" value="${w.jp}" placeholder="日本語" onchange="updateWordField('${w.id}', 'jp', this.value)">
             <select class="edit-select" onchange="updateWordField('${w.id}', 'pos', this.value)">
+              <option value="" ${currentPos === '' ? 'selected' : ''}>--</option>
               <option value="名詞 (n.)" ${currentPos === '名詞 (n.)' ? 'selected' : ''}>名詞 (n.)</option>
               <option value="動詞 (v.)" ${currentPos === '動詞 (v.)' ? 'selected' : ''}>動詞 (v.)</option>
               <option value="形容詞 (a.)" ${currentPos === '形容詞 (a.)' ? 'selected' : ''}>形容詞 (a.)</option>
