@@ -223,10 +223,10 @@ input:checked + .slider:before {
   <div class="password-wrapper" style="margin-bottom: 12px;">
     <input type="password" id="passInput" placeholder="パスワードを入力" style="text-align: center; height:54px; font-size:20px;">
     <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('passInput', this)" title="パスワードの表示切替">
-      <!-- 非表示アイコン (斜線付きの目) -->
-      <svg class="icon-eye-off" viewBox="0 0 24 24">
-        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/>
-        <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- 初期状態: 非表示アイコン（開いた目に左下向きの斜線） -->
+      <svg viewBox="0 0 24 24">
+        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+        <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
       </svg>
     </button>
   </div>
@@ -349,9 +349,9 @@ input:checked + .slider:before {
     <div class="password-wrapper" style="margin-bottom:12px;">
       <input type="password" id="adminPassInput" placeholder="管理者パスワード" style="text-align:center;">
       <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('adminPassInput', this)" title="パスワードの表示切替">
-        <svg class="icon-eye-off" viewBox="0 0 24 24">
-          <path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/>
-          <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <svg viewBox="0 0 24 24">
+          <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+          <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
       </button>
     </div>
@@ -377,7 +377,10 @@ input:checked + .slider:before {
         <div class="password-wrapper">
           <input type="password" id="currentSitePassInput" placeholder="現在のパスワード">
           <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('currentSitePassInput', this)">
-            <svg class="icon-eye-off" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+              <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -387,7 +390,10 @@ input:checked + .slider:before {
         <div class="password-wrapper">
           <input type="password" id="adminVerifyPassInput" placeholder="管理者パスワード">
           <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('adminVerifyPassInput', this)">
-            <svg class="icon-eye-off" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+              <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -397,7 +403,10 @@ input:checked + .slider:before {
         <div class="password-wrapper">
           <input type="password" id="newSitePassInput1" placeholder="新しいパスワード">
           <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePassInput1', this)">
-            <svg class="icon-eye-off" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+              <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -407,7 +416,10 @@ input:checked + .slider:before {
         <div class="password-wrapper">
           <input type="password" id="newSitePassInput2" placeholder="新しいパスワード（再入力）">
           <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePassInput2', this)">
-            <svg class="icon-eye-off" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+              <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -442,10 +454,10 @@ const STORAGE_GROUPS_KEY = "eiken_app_groups";
 const STORAGE_WORDS_KEY = "eiken_app_words";
 const STORAGE_POS_SHOW_KEY = "eiken_app_show_pos";
 
-// SVG アイコン定義（開いた目・斜線付きの目）
+// SVG アイコン定義（開いた目・左下向き斜線付きの目）
 const SVG_EYE_OPEN = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
 
-const SVG_EYE_OFF = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c.69 1.77 1.83 3.32 3.24 4.52L2.81 17.93l1.41 1.41 15.36-15.36-1.41-1.41L16.2 4.56C14.87 4.52 13.48 4.5 12 4.5zM12 7c.88 0 1.7.2 2.45.54l-1.63 1.63C12.56 9.06 12.29 9 12 9c-1.66 0-3 1.34-3 3 0 .29.06.56.17.82L7.54 14.45C7.2 13.7 7 12.88 7 12c0-2.76 2.24-5 5-5zm-7.6 5C5.83 9.4 8.68 7.5 12 7.5c.78 0 1.54.08 2.27.23l-1.58 1.58C12.45 9.1 12.23 9 12 9c-1.66 0-3 1.34-3 3 0 .23.1.45.31.69L7.5 14.51C5.9 13.38 4.79 11.83 4.4 12zM12 19.5c5 0 9.27-3.11 11-7.5-1.1-2.82-3.32-5.01-6.13-6.11l-1.51 1.51C17.27 8.27 18.9 9.94 19.6 12c-1.4 3.6-4.9 6-7.6 6-1.12 0-2.19-.24-3.15-.68l-1.5 1.5c1.42.44 2.98.68 4.65.68z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+const SVG_EYE_OFF = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`;
 
 // データ読み込み
 let sitePasscode = localStorage.getItem(STORAGE_SITE_PASS_KEY) || DEFAULT_SITE_PASS;
@@ -464,7 +476,7 @@ let q = [], i = 0, ok = 0, ng = 0, done = false;
 let wrongQueue = [];
 const $ = id => document.getElementById(id);
 
-// パスワード表示／非表示切り替え関数（イラストスタイルのSVGアイコンを使用）
+// パスワード表示／非表示切り替え関数
 function togglePassVisibility(inputId, btnEl) {
   const input = $(inputId);
   if (!input) return;
@@ -473,7 +485,7 @@ function togglePassVisibility(inputId, btnEl) {
     btnEl.innerHTML = SVG_EYE_OPEN; // 表示状態（開いた目）
   } else {
     input.type = "password";
-    btnEl.innerHTML = SVG_EYE_OFF; // 非表示状態（斜線付きの目）
+    btnEl.innerHTML = SVG_EYE_OFF; // 非表示状態（開いた目＋左下向き斜線）
   }
 }
 
