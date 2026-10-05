@@ -158,8 +158,8 @@ input:checked + .slider:before {
 .wrong-item .jp-pos{color:#666;font-size:13px;text-align:right}
 
 /* モーダル表示エリア */
-.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999;padding:15px}
-.modal-content{background:#fff;border-radius:18px;padding:24px 20px;width:min(100%,440px);box-shadow:0 10px 25px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1050;padding:15px}
+.modal-content{background:#fff;border-radius:18px;padding:24px 20px;width:min(100%,480px);box-shadow:0 10px 25px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
 .form-group{margin-bottom:14px;text-align:left;}
 .form-group label{font-size:13px;font-weight:bold;color:#444;display:block;margin-bottom:6px;}
 
@@ -191,16 +191,6 @@ input:checked + .slider:before {
   margin-bottom: 20px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
-.admin-section-title {
-  font-size: 22px;
-  font-weight: 700;
-  border: 2px solid #222;
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-bottom: 18px;
-  background: #fff;
-  text-align: center;
-}
 
 @media(max-width:500px){
   .edit-row{grid-template-columns:1fr 1fr;row-gap:6px}
@@ -223,7 +213,6 @@ input:checked + .slider:before {
   <div class="password-wrapper" style="margin-bottom: 12px;">
     <input type="password" id="passInput" placeholder="パスワードを入力" style="text-align: center; height:54px; font-size:20px;">
     <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('passInput', this)" title="パスワードの表示切替">
-      <!-- 初期状態: 非表示アイコン（開いた目に左下向きの斜線） -->
       <svg viewBox="0 0 24 24">
         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
         <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
@@ -368,99 +357,124 @@ input:checked + .slider:before {
   <div class="admin-container">
     <div class="admin-header-title">管理者設定</div>
 
-    <!-- パスワード変更セクション -->
-    <div class="admin-section-box">
-      <div class="admin-section-title">パスワード変更</div>
+    <div class="admin-section-box" style="text-align:center; padding: 30px 20px;">
+      <button type="button" class="primary" onclick="openPassChangeModal()" style="width:100%; height:50px; font-size:16px;">パスワード変更</button>
+    </div>
 
+    <div style="text-align:center; margin-top:20px;">
+      <button type="button" class="secondary" onclick="closeAdminPanelModal()" style="width:100%; max-width:200px; height:44px;">設定画面を閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- パスワード変更モーダル画面 -->
+<div id="passChangeModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="auth-title" style="text-align:center; margin-bottom:15px;">パスワード変更</div>
+
+    <!-- 1. サイトパスワード変更 -->
+    <div style="border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px;">
+      <div style="font-weight:bold; font-size:15px; margin-bottom:10px; color:#111;">サイトパスワードの変更</div>
+      
       <div class="form-group">
         <label>現行のサイトパスワード</label>
         <div class="password-wrapper">
-          <input type="password" id="currentSitePassInput" placeholder="現在のパスワード">
-          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('currentSitePassInput', this)">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-              <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
+          <input type="password" id="curSitePass" placeholder="現在のサイトパスワード">
+          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('curSitePass', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
           </button>
         </div>
       </div>
 
       <div class="form-group">
-        <label>管理者パスワード</label>
+        <label>新しいサイトパスワード</label>
         <div class="password-wrapper">
-          <input type="password" id="adminVerifyPassInput" placeholder="管理者パスワード">
-          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('adminVerifyPassInput', this)">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-              <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
+          <input type="password" id="newSitePass1" placeholder="新しいパスワード">
+          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePass1', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
           </button>
         </div>
       </div>
 
       <div class="form-group">
-        <label>新しいパスワード（1回目）</label>
+        <label>新しいサイトパスワード（確認）</label>
         <div class="password-wrapper">
-          <input type="password" id="newSitePassInput1" placeholder="新しいパスワード">
-          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePassInput1', this)">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-              <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
+          <input type="password" id="newSitePass2" placeholder="新しいパスワード（再入力）">
+          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePass2', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
           </button>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>新しいパスワード（2回目・確認）</label>
-        <div class="password-wrapper">
-          <input type="password" id="newSitePassInput2" placeholder="新しいパスワード（再入力）">
-          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newSitePassInput2', this)">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-              <line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div id="adminMsg" style="font-size:14px;margin:12px 0;text-align:center;min-height:20px;"></div>
-
-      <div style="display:flex;gap:10px;margin-top:16px;">
-        <button type="button" class="secondary" onclick="closeAdminPanelModal()" style="flex:1;">閉じる</button>
-        <button type="button" class="primary" onclick="saveNewSitePassword()" style="flex:1;">保存</button>
-      </div>
+      <button type="button" class="primary" onclick="saveSitePassword()" style="width:100%; height:40px; font-size:14px;">サイトパスワードを更新</button>
     </div>
 
-    <!-- 一般設定・その他セクション -->
-    <div class="admin-section-box">
-      <div class="setting-row" style="padding:0;">
-        <span>データ全消去:</span>
-        <button type="button" class="btn-del" style="height:38px;" onclick="resetAllData()">初期化する</button>
+    <!-- 2. 管理者パスワード変更 -->
+    <div>
+      <div style="font-weight:bold; font-size:15px; margin-bottom:10px; color:#111;">管理者パスワード変更</div>
+
+      <div class="form-group">
+        <label>現行の管理者パスワード</label>
+        <div class="password-wrapper">
+          <input type="password" id="curAdminPass" placeholder="現在の管理者パスワード">
+          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('curAdminPass', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </div>
+
+      <div class="form-group">
+        <label>新しい管理者パスワード（1回目）</label>
+        <div class="password-wrapper">
+          <input type="password" id="newAdminPass1" placeholder="新しい管理者パスワード">
+          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newAdminPass1', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>新しい管理者パスワード（2回目・確認）</label>
+        <div class="password-wrapper">
+          <input type="password" id="newAdminPass2" placeholder="新しい管理者パスワード（再入力）">
+          <button type="button" class="toggle-password-btn" onclick="togglePassVisibility('newAdminPass2', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="primary" onclick="saveAdminPassword()" style="width:100%; height:40px; font-size:14px;">管理者パスワードを更新</button>
     </div>
 
+    <div id="passModalMsg" style="font-size:14px; margin:14px 0 6px; text-align:center; min-height:20px;"></div>
+
+    <div style="margin-top:15px; text-align:center;">
+      <button type="button" class="secondary" onclick="closePassChangeModal()" style="width:100%; height:42px;">閉じる</button>
+    </div>
   </div>
 </div>
 
 <script>
 // 設定保持キー
 const DEFAULT_SITE_PASS = "1902";
-const ADMIN_PASS = "0530";
+const DEFAULT_ADMIN_PASS = "0530";
 
 const STORAGE_SITE_PASS_KEY = "eiken_app_site_passcode";
+const STORAGE_ADMIN_PASS_KEY = "eiken_app_admin_passcode";
 const STORAGE_AUTH_PASS_KEY = "app_auth_passcode";
 const STORAGE_GROUPS_KEY = "eiken_app_groups";
 const STORAGE_WORDS_KEY = "eiken_app_words";
 const STORAGE_POS_SHOW_KEY = "eiken_app_show_pos";
 
-// SVG アイコン定義（開いた目・左下向き斜線付きの目）
-const SVG_EYE_OPEN = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+const SESSION_ADMIN_AUTH_KEY = "app_admin_authenticated";
 
+// SVG アイコン定義
+const SVG_EYE_OPEN = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
 const SVG_EYE_OFF = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`;
 
 // データ読み込み
 let sitePasscode = localStorage.getItem(STORAGE_SITE_PASS_KEY) || DEFAULT_SITE_PASS;
+let adminPasscode = localStorage.getItem(STORAGE_ADMIN_PASS_KEY) || DEFAULT_ADMIN_PASS;
 let groups = JSON.parse(localStorage.getItem(STORAGE_GROUPS_KEY)) || [];
 let words = JSON.parse(localStorage.getItem(STORAGE_WORDS_KEY)) || [];
 let showPos = localStorage.getItem(STORAGE_POS_SHOW_KEY) !== "false";
@@ -470,26 +484,27 @@ function saveData() {
   localStorage.setItem(STORAGE_WORDS_KEY, JSON.stringify(words));
   localStorage.setItem(STORAGE_POS_SHOW_KEY, showPos);
   localStorage.setItem(STORAGE_SITE_PASS_KEY, sitePasscode);
+  localStorage.setItem(STORAGE_ADMIN_PASS_KEY, adminPasscode);
 }
 
 let q = [], i = 0, ok = 0, ng = 0, done = false;
 let wrongQueue = [];
 const $ = id => document.getElementById(id);
 
-// パスワード表示／非表示切り替え関数
+// パスワード表示／非表示切り替え
 function togglePassVisibility(inputId, btnEl) {
   const input = $(inputId);
   if (!input) return;
   if (input.type === "password") {
     input.type = "text";
-    btnEl.innerHTML = SVG_EYE_OPEN; // 表示状態（開いた目）
+    btnEl.innerHTML = SVG_EYE_OPEN;
   } else {
     input.type = "password";
-    btnEl.innerHTML = SVG_EYE_OFF; // 非表示状態（開いた目＋左下向き斜線）
+    btnEl.innerHTML = SVG_EYE_OFF;
   }
 }
 
-// 連続クリックカウンター
+// 連続タップ処理（5回クリックで管理者メニュー）
 let titleClickCount = 0;
 let titleClickTimer = null;
 
@@ -499,15 +514,20 @@ function handleTitleClick() {
   
   if (titleClickCount >= 5) {
     titleClickCount = 0;
-    openAdminAuthModal();
+    // 一度認証済みであれば認証画面をスキップして管理者パネルを開く
+    if (sessionStorage.getItem(SESSION_ADMIN_AUTH_KEY) === "true") {
+      openAdminPanelModal();
+    } else {
+      openAdminAuthModal();
+    }
   } else {
     titleClickTimer = setTimeout(() => {
       titleClickCount = 0;
-    }, 2000); // 2秒以内に5回タップ
+    }, 2000);
   }
 }
 
-// 認証チェック
+// 初期認証チェック
 function initAuth() {
   const savedPass = localStorage.getItem(STORAGE_AUTH_PASS_KEY);
   if (savedPass === sitePasscode) {
@@ -550,7 +570,9 @@ function closeAdminAuthModal() {
 
 function checkAdminPassword() {
   const inputVal = $("adminPassInput").value;
-  if (inputVal === ADMIN_PASS) {
+  if (inputVal === adminPasscode) {
+    // 認証状態をセッションに保持
+    sessionStorage.setItem(SESSION_ADMIN_AUTH_KEY, "true");
     closeAdminAuthModal();
     openAdminPanelModal();
   } else {
@@ -561,11 +583,6 @@ function checkAdminPassword() {
 }
 
 function openAdminPanelModal() {
-  $("adminMsg").textContent = "";
-  $("currentSitePassInput").value = "";
-  $("adminVerifyPassInput").value = "";
-  $("newSitePassInput1").value = "";
-  $("newSitePassInput2").value = "";
   $("adminPanelModal").classList.remove("hidden");
 }
 
@@ -573,57 +590,92 @@ function closeAdminPanelModal() {
   $("adminPanelModal").classList.add("hidden");
 }
 
-function saveNewSitePassword() {
-  const curPass = $("currentSitePassInput").value;
-  const adminPass = $("adminVerifyPassInput").value;
-  const newPass1 = $("newSitePassInput1").value;
-  const newPass2 = $("newSitePassInput2").value;
+/* --- パスワード変更モーダル画面制御 --- */
+function openPassChangeModal() {
+  $("passModalMsg").textContent = "";
+  $("curSitePass").value = "";
+  $("newSitePass1").value = "";
+  $("newSitePass2").value = "";
+  $("curAdminPass").value = "";
+  $("newAdminPass1").value = "";
+  $("newAdminPass2").value = "";
+  $("passChangeModal").classList.remove("hidden");
+}
 
-  $("adminMsg").style.color = "#ef4444";
+function closePassChangeModal() {
+  $("passChangeModal").classList.add("hidden");
+}
 
-  if (!curPass || !adminPass || !newPass1 || !newPass2) {
-    $("adminMsg").textContent = "すべての項目を入力してください。";
+// サイトパスワードの更新
+function saveSitePassword() {
+  const curPass = $("curSitePass").value;
+  const newPass1 = $("newSitePass1").value;
+  const newPass2 = $("newSitePass2").value;
+
+  $("passModalMsg").style.color = "#ef4444";
+
+  if (!curPass || !newPass1 || !newPass2) {
+    $("passModalMsg").textContent = "サイトパスワードの全項目を入力してください。";
     return;
   }
 
   if (curPass !== sitePasscode) {
-    $("adminMsg").textContent = "現行のサイトパスワードが違います。";
-    return;
-  }
-
-  if (adminPass !== ADMIN_PASS) {
-    $("adminMsg").textContent = "管理者パスワードが違います。";
+    $("passModalMsg").textContent = "現在のサイトパスワードが一致しません。";
     return;
   }
 
   if (newPass1 !== newPass2) {
-    $("adminMsg").textContent = "新しいパスワードが一致しません。";
+    $("passModalMsg").textContent = "新しいサイトパスワードが一致しません。";
     return;
   }
 
-  // パスワードの更新処理
   sitePasscode = newPass1;
   saveData();
-
-  // パスワード変更に伴い、認証保持状態を解除
   localStorage.removeItem(STORAGE_AUTH_PASS_KEY);
 
-  $("adminMsg").style.color = "#16a34a";
-  $("adminMsg").textContent = "パスワードを更新しました！次回ログイン時は新パスワードが必要です。";
+  $("passModalMsg").style.color = "#16a34a";
+  $("passModalMsg").textContent = "サイトパスワードを更新しました。次回ログイン時に適用されます。";
 
-  setTimeout(() => {
-    closeAdminPanelModal();
-  }, 1500);
+  $("curSitePass").value = "";
+  $("newSitePass1").value = "";
+  $("newSitePass2").value = "";
 }
 
-function resetAllData() {
-  if (confirm("登録されているすべてのデータを削除して初期化しますか？")) {
-    groups = [];
-    words = [];
-    saveData();
-    closeAdminPanelModal();
-    start();
+// 管理者パスワードの更新
+function saveAdminPassword() {
+  const curPass = $("curAdminPass").value;
+  const newPass1 = $("newAdminPass1").value;
+  const newPass2 = $("newAdminPass2").value;
+
+  $("passModalMsg").style.color = "#ef4444";
+
+  if (!curPass || !newPass1 || !newPass2) {
+    $("passModalMsg").textContent = "管理者パスワードの全項目を入力してください。";
+    return;
   }
+
+  if (curPass !== adminPasscode) {
+    $("passModalMsg").textContent = "現在の管理者パスワードが一致しません。";
+    return;
+  }
+
+  if (newPass1 !== newPass2) {
+    $("passModalMsg").textContent = "新しい管理者パスワード（1回目・2回目）が一致しません。";
+    return;
+  }
+
+  adminPasscode = newPass1;
+  saveData();
+
+  // 新しい管理者パスワードに変更されたため、認証要求フラグをリセット
+  sessionStorage.removeItem(SESSION_ADMIN_AUTH_KEY);
+
+  $("passModalMsg").style.color = "#16a34a";
+  $("passModalMsg").textContent = "管理者パスワードを変更しました！次回アクセス時に新しいパスワードが要求されます。";
+
+  $("curAdminPass").value = "";
+  $("newAdminPass1").value = "";
+  $("newAdminPass2").value = "";
 }
 
 function shuffle(a) { return a.slice().sort(() => Math.random() - .5); }
@@ -641,19 +693,10 @@ function norm(s) {
 function normalizePos(rawPos) {
   if (!rawPos) return "名詞 (n.)";
   const p = rawPos.toString().toLowerCase();
-  
-  if (p.includes("動詞") || p.includes("v.") || p.includes("verb") || p === "v") {
-    return "動詞 (v.)";
-  }
-  if (p.includes("形容詞") || p.includes("a.") || p.includes("adj") || p === "a") {
-    return "形容詞 (a.)";
-  }
-  if (p.includes("副詞") || p.includes("ad.") || p.includes("adv") || p === "ad") {
-    return "副詞 (ad.)";
-  }
-  if (p.includes("名詞") || p.includes("n.") || p.includes("noun") || p === "n") {
-    return "名詞 (n.)";
-  }
+  if (p.includes("動詞") || p.includes("v.") || p.includes("verb") || p === "v") return "動詞 (v.)";
+  if (p.includes("形容詞") || p.includes("a.") || p.includes("adj") || p === "a") return "形容詞 (a.)";
+  if (p.includes("副詞") || p.includes("ad.") || p.includes("adv") || p === "ad") return "副詞 (ad.)";
+  if (p.includes("名詞") || p.includes("n.") || p.includes("noun") || p === "n") return "名詞 (n.)";
   return "名詞 (n.)";
 }
 
@@ -714,7 +757,6 @@ function start() {
 
 function startRetryWrong() {
   if (wrongQueue.length === 0) return;
-  
   const orderMode = $("orderSelect").value;
   if (orderMode === "random") {
     q = shuffle(wrongQueue);
@@ -1025,7 +1067,6 @@ function updateManageUI() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // ログイン状態確認
   initAuth();
 
   $("loginBtn").addEventListener("click", checkPassword);
