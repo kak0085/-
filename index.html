@@ -841,7 +841,7 @@ function finish() {
     wrongBox.classList.add("hidden");
     wrongListItems.innerHTML = "";
     retryBtn.classList.add("hidden");
-    $("rate").innerHTML += "<br><br><span style='color:#16a34a;font-weight:bold;font-size:18px;'>全問正解！おめでとうございます！</span>";
+    $("rate").innerHTML += "<br><br><span style='color:#16a34a;font-weight:bold;font-size:18px;'>全問正解！おめでとう！</span>";
   }
 }
 
@@ -968,7 +968,7 @@ async function processImageWithGemini() {
 
   try {
     const base64Data = await fileToBase64(file);
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
 
     const promptText = `添付された画像から、英単語・品詞・日本語訳をすべて読み取り、以下のJavaScriptの配列フォーマットのみで出力してください。
 解説や前後の説明文は一切不要です。コードブロックのみを出力してください。
